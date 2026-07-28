@@ -53,7 +53,7 @@ class CuraConan(ConanFile):
         "enterprise": False,
         "staging": False,
         "cloud_api_version": "1",
-        "display_name": "UltiMaker Cura",
+        "display_name": "ProSlicer",
         "cura_debug_mode": False,  # Not yet implemented
         "internal": False,
         "i18n_extract": False,

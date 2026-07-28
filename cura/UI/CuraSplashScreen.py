@@ -80,6 +80,12 @@ class CuraSplashScreen(QSplashScreen):
         elif len(version) > 1:
             painter.drawText(40, 104 + self._version_y_offset, round(330 * self._scale), round(230 * self._scale), Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop, f"{version[0]}-{version[1]}" if not ApplicationMetadata.IsAlternateVersion else ApplicationMetadata.CuraBuildType)
 
+        # Draw attribution text
+        attribution_font = QFont()
+        attribution_font.setPixelSize(14)
+        painter.setFont(attribution_font)
+        painter.drawText(40, 160 + self._version_y_offset, round(330 * self._scale), round(230 * self._scale), Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop, "Thank you to Ultimaker for making this possible")
+
         # Draw the loading image
         pen = QPen()
         pen.setWidthF(2 * self._scale)
