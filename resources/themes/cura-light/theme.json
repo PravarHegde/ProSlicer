@@ -1193,12 +1193,42 @@
             255,
             255
         ],
-        "layerview_inset_0": "#00f0ff",
-        "layerview_inset_x": "#0055ff",
-        "layerview_skin": "#8a2be2",
-        "layerview_support": "#475569",
-        "layerview_skirt": "#00ff88",
-        "layerview_infill": "#ff00ff",
+        "layerview_inset_0": [
+            0,
+            240,
+            255,
+            255
+        ],
+        "layerview_inset_x": [
+            0,
+            85,
+            255,
+            255
+        ],
+        "layerview_skin": [
+            138,
+            43,
+            226,
+            255
+        ],
+        "layerview_support": [
+            71,
+            85,
+            105,
+            255
+        ],
+        "layerview_skirt": [
+            0,
+            255,
+            136,
+            255
+        ],
+        "layerview_infill": [
+            255,
+            0,
+            255,
+            255
+        ],
         "layerview_support_infill": [
             0,
             230,
@@ -1229,8 +1259,18 @@
             255,
             255
         ],
-        "layerview_support_interface": "#94a3b8",
-        "layerview_prime_tower": "#ffffff",
+        "layerview_support_interface": [
+            148,
+            163,
+            184,
+            255
+        ],
+        "layerview_prime_tower": [
+            255,
+            255,
+            255,
+            255
+        ],
         "layerview_nozzle": [
             224,
             192,
