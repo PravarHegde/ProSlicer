@@ -34,93 +34,6 @@ Item
     {
         anchors.fill: parent
 
-        RowLayout
-        {
-            id: itemRow
-
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.leftMargin: UM.Theme.getSize("default_margin").width + openFileButton.width + openFileMenu.width
-            property int machineSelectorWidth: Math.round((width - printSetupSelectorItem.width) / 3)
-
-            height: parent.height
-            // This is a trick to make sure that the borders of the two adjacent buttons' borders overlap. Otherwise
-            // there will be double border (one from each button)
-            spacing: -UM.Theme.getSize("default_lining").width
-
-            Cura.MachineSelector
-            {
-                id: machineSelection
-                headerCornerSide: Cura.RoundedRectangle.Direction.Left
-                Layout.preferredWidth: parent.machineSelectorWidth
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-
-                machineManager: Cura.MachineManager
-                onSelectPrinter: function(machine)
-                {
-                    toggleContent();
-                    Cura.MachineManager.setActiveMachine(machine.id);
-                }
-
-                machineListModel: Cura.MachineListModel {}
-
-                buttons: [
-                    Cura.SecondaryButton
-                    {
-                        id: addPrinterButton
-                        leftPadding: UM.Theme.getSize("default_margin").width
-                        rightPadding: UM.Theme.getSize("default_margin").width
-                        text: catalog.i18nc("@button", "Add printer")
-                        // The maximum width of the button is half of the total space, minus the padding of the parent, the left
-                        // padding of the component and half the spacing because of the space between buttons.
-                        fixedWidthMode: true
-                        width: Math.round(parent.width / 2 - leftPadding * 1.5)
-                        onClicked:
-                        {
-                            machineSelection.toggleContent()
-                            Cura.Actions.addMachine.trigger()
-                        }
-                    },
-                    Cura.SecondaryButton
-                    {
-                        id: managePrinterButton
-                        leftPadding: UM.Theme.getSize("default_margin").width
-                        rightPadding: UM.Theme.getSize("default_margin").width
-                        text: catalog.i18nc("@button", "Manage printers")
-                        fixedWidthMode: true
-                        // The maximum width of the button is half of the total space, minus the padding of the parent, the right
-                        // padding of the component and half the spacing because of the space between buttons.
-                        width: Math.round(parent.width / 2 - rightPadding * 1.5)
-                        onClicked:
-                        {
-                            machineSelection.toggleContent()
-                            Cura.Actions.configureMachines.trigger()
-                        }
-                    }
-                ]
-            }
-
-            Cura.ConfigurationMenu
-            {
-                id: printerSetup
-                Layout.fillHeight: true
-                Layout.fillWidth: true
-                Layout.preferredWidth: parent.machineSelectorWidth * 2
-            }
-
-            Item
-            {
-                id: printSetupSelectorItem
-                // This is a work around to prevent the printSetupSelector from having to be re-loaded every time
-                // a stage switch is done.
-                children: [printSetupSelector]
-                height: childrenRect.height
-                width: childrenRect.width
-            }
-        }
-
-        //Pop-up shown when there are multiple items to select from.
         Cura.ExpandablePopup
         {
             id: openFileMenu
@@ -145,8 +58,6 @@ Item
             contentItem: Item
             {
                 id: popup
-                implicitWidth: openProviderColumn.width
-                implicitHeight: openProviderColumn.height
 
                 Column
                 {

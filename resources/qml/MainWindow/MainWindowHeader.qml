@@ -10,207 +10,214 @@ import Cura 1.0 as Cura
 import "../Account"
 import "../ApplicationSwitcher"
 
-Item
+Rectangle
 {
     id: base
+    color: UM.Theme.getColor("main_window_header_background")
 
-    implicitHeight: UM.Theme.getSize("main_window_header").height
-    implicitWidth: UM.Theme.getSize("main_window_header").width
+    Column {
+        anchors.fill: parent
+        anchors.margins: UM.Theme.getSize("default_margin").width
+        spacing: 20
 
-    Image
-    {
-        id: logo
-        anchors.left: parent.left
-        anchors.leftMargin: UM.Theme.getSize("default_margin").width
-        anchors.verticalCenter: parent.verticalCenter
-
-        source: UM.Theme.getImage("logo")
-        width: UM.Theme.getSize("logo").width
-        height: UM.Theme.getSize("logo").height
-        fillMode: Image.PreserveAspectFit
-        sourceSize.width: width
-        sourceSize.height: height
-    }
-    ButtonGroup
-    {
-        buttons: stagesListContainer.children
-    }
-
-    Row
-    {
-        id: stagesListContainer
-        spacing: Math.round(UM.Theme.getSize("default_margin").width / 2)
-
-        anchors
-        {
-            horizontalCenter: parent.horizontalCenter
-            verticalCenter: parent.verticalCenter
-            leftMargin: UM.Theme.getSize("default_margin").width
+        Column {
+            spacing: 15
+            anchors.horizontalCenter: parent.horizontalCenter
+            
+            Image
+            {
+                id: logo
+                source: "../../images/cura-icon-dark.png"
+                width: 100
+                height: 100
+                fillMode: Image.PreserveAspectFit
+                anchors.horizontalCenter: parent.horizontalCenter
+            }
+            
+            UM.Label {
+                text: "ProSlicer"
+                color: UM.Theme.getColor("text")
+                font: UM.Theme.getFont("large_bold")
+                anchors.horizontalCenter: parent.horizontalCenter
+            }
         }
 
-        // The main window header is dynamically filled with all available stages
-        Repeater
+        ButtonGroup
         {
-            id: stagesHeader
+            buttons: stagesListContainer.children
+        }
 
-            model: UM.StageModel { }
+        Column
+        {
+            id: stagesListContainer
+            spacing: Math.round(UM.Theme.getSize("default_margin").width / 2)
+            width: parent.width
 
-            delegate: Button
+            // The main window header is dynamically filled with all available stages
+            Repeater
             {
-                id: stageSelectorButton
-                text: model.name.toUpperCase()
-                checkable: true
-                checked: UM.Controller.activeStage !== null && model.id == UM.Controller.activeStage.stageId
+                id: stagesHeader
+                model: UM.StageModel { }
 
-                anchors.verticalCenter: parent.verticalCenter
-                //style: UM.Theme.styles.main_window_header_tab
-                height: Math.round(0.5 * UM.Theme.getSize("main_window_header").height)
-                // This id is required to find the stage buttons through Squish
-                property string stageId: model.id
-                hoverEnabled: true
-                leftPadding: 2 * UM.Theme.getSize("default_margin").width
-                rightPadding: 2 * UM.Theme.getSize("default_margin").width
-
-                // Set top & bottom padding to whatever space is left from height and the size of the text.
-                bottomPadding: Math.round((height - buttonLabel.contentHeight) / 2)
-                topPadding: bottomPadding
-
-                background: Rectangle
+                delegate: Button
                 {
-                    radius: UM.Theme.getSize("action_button_radius").width
-                    color:
+                    id: stageSelectorButton
+                    text: model.name.toUpperCase()
+                    checkable: true
+                    checked: UM.Controller.activeStage !== null && model.id == UM.Controller.activeStage.stageId
+                    
+                    width: parent.width
+                    height: Math.round(UM.Theme.getSize("main_window_header").height)
+                    property string stageId: model.id
+                    hoverEnabled: true
+
+                    background: Rectangle
                     {
-                        if (stageSelectorButton.checked)
-                        {
-                            return UM.Theme.getColor("main_window_header_button_background_active")
-                        }
-                        else
-                        {
-                            if (stageSelectorButton.hovered)
-                            {
-                                return UM.Theme.getColor("main_window_header_button_background_hovered")
-                            }
-                            return UM.Theme.getColor("main_window_header_button_background_inactive")
-                        }
+                        radius: UM.Theme.getSize("action_button_radius").width
+                        color: stageSelectorButton.checked ? UM.Theme.getColor("main_window_header_button_background_active") : (stageSelectorButton.hovered ? UM.Theme.getColor("main_window_header_button_background_hovered") : "transparent")
+                    }
+
+                    contentItem: UM.Label
+                    {
+                        id: buttonLabel
+                        text: stageSelectorButton.text
+                        anchors.centerIn: stageSelectorButton
+                        font: UM.Theme.getFont("medium")
+                        color: stageSelectorButton.checked ? UM.Theme.getColor("main_window_header_button_text_active") : (stageSelectorButton.hovered ? UM.Theme.getColor("main_window_header_button_text_hovered") : UM.Theme.getColor("main_window_header_button_text_inactive"))
+                    }
+
+                    MouseArea
+                    {
+                        anchors.fill: parent
+                        onClicked: UM.Controller.setActiveStage(model.id)
                     }
                 }
+            }
+        }
+        
 
-                contentItem: UM.Label
+        Item {
+            width: 1
+            height: 10 // spacer
+        }
+
+        Cura.MachineSelector
+        {
+            id: machineSelection
+            headerCornerSide: Cura.RoundedRectangle.Direction.All
+            width: parent.width
+            height: UM.Theme.getSize("stage_menu").height
+
+            machineManager: Cura.MachineManager
+            onSelectPrinter: function(machine)
+            {
+                toggleContent();
+                Cura.MachineManager.setActiveMachine(machine.id);
+            }
+            machineListModel: Cura.MachineListModel {}
+            buttons: [
+                Cura.SecondaryButton
                 {
-                    id: buttonLabel
-                    text: stageSelectorButton.text
-                    anchors.centerIn: stageSelectorButton
-                    font: UM.Theme.getFont("medium")
-                    color:
+                    id: managePrinterButton
+                    leftPadding: UM.Theme.getSize("default_margin").width
+                    rightPadding: UM.Theme.getSize("default_margin").width
+                    text: catalog.i18nc("@button", "Manage printers")
+                    width: parent.width
+                    onClicked:
                     {
-                        if (stageSelectorButton.checked)
-                        {
-                            return UM.Theme.getColor("main_window_header_button_text_active")
-                        }
-                        else
-                        {
-                            if (stageSelectorButton.hovered)
-                            {
-                                return UM.Theme.getColor("main_window_header_button_text_hovered")
-                            }
-                            return UM.Theme.getColor("main_window_header_button_text_inactive")
-                        }
+                        machineSelection.toggleContent()
+                        Cura.Actions.configureMachines.trigger()
                     }
                 }
+            ]
+        }
 
-                // This is a trick to assure the activeStage is correctly changed. It doesn't work properly if done in the onClicked (see CURA-6028)
-                MouseArea
+        Cura.ConfigurationMenu
+        {
+            id: printerSetup
+            width: parent.width
+            height: UM.Theme.getSize("stage_menu").height
+        }
+
+        Cura.PrintSetupSelector
+        {
+            id: printSetupSelectorItem
+            width: parent.width
+            height: UM.Theme.getSize("stage_menu").height
+            headerCornerSide: Cura.RoundedRectangle.Direction.All
+        }
+
+        Item {
+            width: 1
+            height: 10 // spacer
+        }
+
+
+        Button
+        {
+            id: marketplaceButton
+            text: catalog.i18nc("@action:button", "Marketplace")
+            height: Math.round(UM.Theme.getSize("main_window_header").height)
+            width: parent.width
+            onClicked: Cura.Actions.browsePackages.trigger()
+            hoverEnabled: true
+
+            background: Rectangle
+            {
+                id: marketplaceButtonBorder
+                radius: UM.Theme.getSize("action_button_radius").width
+                color: "transparent"
+                border.width: UM.Theme.getSize("default_lining").width
+                border.color: UM.Theme.getColor("primary_text")
+
+                Rectangle
                 {
+                    id: marketplaceButtonFill
                     anchors.fill: parent
-                    onClicked: UM.Controller.setActiveStage(model.id)
+                    radius: parent.radius
+                    color: UM.Theme.getColor("primary_text")
+                    opacity: marketplaceButton.hovered ? 0.2 : 0
+                    Behavior on opacity { NumberAnimation { duration: 100 } }
+                }
+            }
+
+            contentItem: UM.Label
+            {
+                id: label
+                text: marketplaceButton.text
+                color: UM.Theme.getColor("primary_text")
+                anchors.centerIn: parent
+            }
+
+            Cura.NotificationIcon
+            {
+                id: marketplaceNotificationIcon
+                anchors
+                {
+                    top: parent.top
+                    right: parent.right
+                    rightMargin: (-0.5 * width) | 0
+                    topMargin: (-0.5 * height) | 0
+                }
+                visible: CuraApplication.getPackageManager().packagesWithUpdate.length > 0
+                labelText:
+                {
+                    const itemCount = CuraApplication.getPackageManager().packagesWithUpdate.length
+                    return itemCount > 9 ? "9+" : itemCount
                 }
             }
         }
-    }
 
-    // Shortcut button to quick access the Toolbox
-    Button
-    {
-        id: marketplaceButton
-        text: catalog.i18nc("@action:button", "Marketplace")
-        height: Math.round(0.5 * UM.Theme.getSize("main_window_header").height)
-        onClicked: Cura.Actions.browsePackages.trigger()
-
-        hoverEnabled: true
-
-        background: Rectangle
+        ApplicationSwitcher
         {
-            id: marketplaceButtonBorder
-            radius: UM.Theme.getSize("action_button_radius").width
-            color: UM.Theme.getColor("main_window_header_background")
-            border.width: UM.Theme.getSize("default_lining").width
-            border.color: UM.Theme.getColor("primary_text")
-
-            Rectangle
-            {
-                id: marketplaceButtonFill
-                anchors.fill: parent
-                radius: parent.radius
-                color: UM.Theme.getColor("primary_text")
-                opacity: marketplaceButton.hovered ? 0.2 : 0
-                Behavior on opacity { NumberAnimation { duration: 100 } }
-            }
+            id: applicationSwitcher
+            anchors.horizontalCenter: parent.horizontalCenter
         }
 
-        contentItem: UM.Label
+        AccountWidget
         {
-            id: label
-            text: marketplaceButton.text
-            color: UM.Theme.getColor("primary_text")
-            width: contentWidth
-        }
-
-        anchors
-        {
-            right: applicationSwitcher.left
-            rightMargin: UM.Theme.getSize("default_margin").width
-            verticalCenter: parent.verticalCenter
-        }
-
-        Cura.NotificationIcon
-        {
-            id: marketplaceNotificationIcon
-            anchors
-            {
-                top: parent.top
-                right: parent.right
-                rightMargin: (-0.5 * width) | 0
-                topMargin: (-0.5 * height) | 0
-            }
-            visible: CuraApplication.getPackageManager().packagesWithUpdate.length > 0
-
-            labelText:
-            {
-                const itemCount = CuraApplication.getPackageManager().packagesWithUpdate.length
-                return itemCount > 9 ? "9+" : itemCount
-            }
-        }
-    }
-
-    ApplicationSwitcher
-    {
-        id: applicationSwitcher
-        anchors
-        {
-            verticalCenter: parent.verticalCenter
-            right: accountWidget.left
-            rightMargin: UM.Theme.getSize("default_margin").width
-        }
-    }
-
-    AccountWidget
-    {
-        id: accountWidget
-        anchors
-        {
-            verticalCenter: parent.verticalCenter
-            right: parent.right
-            rightMargin: UM.Theme.getSize("default_margin").width
+            id: accountWidget
+            anchors.horizontalCenter: parent.horizontalCenter
         }
     }
 }
