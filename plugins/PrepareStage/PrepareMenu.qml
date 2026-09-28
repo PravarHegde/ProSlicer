@@ -156,11 +156,10 @@ Item
                 id: background
                 height: parent.height
                 width: parent.width
-                border.color: UM.Theme.getColor("lining")
-                border.width: UM.Theme.getSize("default_lining").width
+                border.width: 0
 
                 radius: UM.Theme.getSize("default_radius").width
-                color: openFileButton.hovered ? UM.Theme.getColor("action_button_hovered") : UM.Theme.getColor("action_button")
+                color: openFileButton.hovered ? UM.Theme.getColor("action_button_hovered") : "transparent"
             }
         }
     }

@@ -1195,26 +1195,26 @@
         ],
         "layerview_inset_0": [
             0,
-            240,
+            255,
             255,
             255
         ],
         "layerview_inset_x": [
             0,
-            85,
+            150,
             255,
             255
         ],
         "layerview_skin": [
-            138,
-            43,
-            226,
+            255,
+            255,
+            255,
             255
         ],
         "layerview_support": [
-            71,
-            85,
-            105,
+            100,
+            116,
+            139,
             255
         ],
         "layerview_skirt": [
@@ -1224,15 +1224,15 @@
             255
         ],
         "layerview_infill": [
-            255,
-            0,
-            255,
+            168,
+            85,
+            247,
             255
         ],
         "layerview_support_infill": [
-            0,
-            230,
-            230,
+            71,
+            85,
+            105,
             127
         ],
         "layerview_move_combing": [

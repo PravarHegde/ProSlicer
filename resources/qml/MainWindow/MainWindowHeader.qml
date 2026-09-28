@@ -15,14 +15,19 @@ Rectangle
     id: base
     color: UM.Theme.getColor("main_window_header_background")
 
-    Column {
-        id: topColumn
+    ScrollView {
+        id: topScrollView
         anchors.top: parent.top
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: bottomContent.top
         anchors.margins: UM.Theme.getSize("default_margin").width
-        spacing: 20
+        clip: true
+
+        Column {
+            id: topColumn
+            width: parent.width
+            spacing: 20
 
         Column {
             spacing: 15
@@ -152,6 +157,7 @@ Rectangle
         }
 
 
+    }
     }
 
     Column {
