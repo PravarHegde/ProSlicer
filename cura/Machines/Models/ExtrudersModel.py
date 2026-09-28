@@ -56,7 +56,7 @@ class ExtrudersModel(ListModel):
     MaterialTypeRole = Qt.ItemDataRole.UserRole + 12
     """The type of the material (e.g. PLA, ABS, PETG, etc.)."""
 
-    defaultColors = ["#ffc924", "#86ec21", "#22eeee", "#245bff", "#9124ff", "#ff24c8"]
+    defaultColors = ["#e5e7eb", "#60a5fa", "#34d399", "#a78bfa", "#f87171", "#fbbf24"]
     """List of colours to display if there is no material or the material has no known colour. """
 
     MaterialNameRole = Qt.ItemDataRole.UserRole + 13
