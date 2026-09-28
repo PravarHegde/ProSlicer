@@ -147,6 +147,18 @@ Rectangle
             headerCornerSide: Cura.RoundedRectangle.Direction.All
         }
 
+
+    }
+
+    Column {
+        id: bottomContent
+        anchors.bottom: parent.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottomMargin: 20
+        spacing: 15
+        z: 1
+
         Item {
             width: 1
             height: 10 // spacer
@@ -159,7 +171,20 @@ Rectangle
             text: catalog.i18nc("@action:button", "Marketplace")
             height: Math.round(UM.Theme.getSize("main_window_header").height)
             width: parent.width
-            onClicked: Cura.Actions.browsePackages.trigger()
+            
+            Menu {
+                id: marketplaceMenu
+                y: -height
+                MenuItem {
+                    text: "ProBharath Marketplace"
+                    onTriggered: Qt.openUrlExternally("https://probharath.com/marketplace")
+                }
+                MenuItem {
+                    text: "Ultimaker Marketplace"
+                    onTriggered: Cura.Actions.browsePackages.trigger()
+                }
+            }
+            onClicked: marketplaceMenu.open()
             hoverEnabled: true
 
             background: Rectangle
@@ -220,4 +245,5 @@ Rectangle
             anchors.horizontalCenter: parent.horizontalCenter
         }
     }
+
 }
