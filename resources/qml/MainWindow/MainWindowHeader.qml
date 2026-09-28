@@ -26,7 +26,7 @@ Rectangle
 
         Column {
             id: topColumn
-            width: parent.width
+            width: topScrollView.availableWidth
             spacing: 20
 
         Column {
