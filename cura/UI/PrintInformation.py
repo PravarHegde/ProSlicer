@@ -294,7 +294,17 @@ class PrintInformation(QObject):
     def setJobName(self, name: str, is_user_specified_job_name = False) -> None:
         self._is_user_specified_job_name = is_user_specified_job_name
         self._job_name = name
-        self._base_name = name.replace(self._abbr_machine + "_", "")
+        
+        # Strip either the full prefix or just the machine prefix
+        stripped_name = name
+        if stripped_name.startswith(self._abbr_machine + "_"):
+            parts = stripped_name[len(self._abbr_machine) + 1:].split("_")
+            # If the next part is the material, strip it too (heuristic)
+            if len(parts) > 1 and parts[0].isupper() and len(parts[0]) <= 5: # e.g. PLA
+                stripped_name = "_".join(parts[1:])
+            else:
+                stripped_name = "_".join(parts)
+        self._base_name = stripped_name
         if name == "":
             self._is_user_specified_job_name = False
         self.jobNameChanged.emit()
@@ -316,14 +326,32 @@ class PrintInformation(QObject):
         base_name = self._base_name
         self._defineAbbreviatedMachineName()
 
+        # Get material type for the prefix
+        material_type = ""
+        global_stack = self._application.getGlobalContainerStack()
+        if global_stack and global_stack.extruderList:
+            for extruder in global_stack.extruderList:
+                if extruder.isEnabled and getattr(extruder, "material", None):
+                    mat = extruder.material.getMetaDataEntry("material")
+                    if mat:
+                        material_type = str(mat).upper()
+                        break
+
+        prefix = self._abbr_machine
+        if material_type:
+            prefix = prefix + "_" + material_type
+
         # Only update the job name when it's not user-specified.
         if not self._is_user_specified_job_name:
             if self._application.getInstance().getPreferences().getValue("cura/jobname_prefix") and not self._pre_sliced:
                 # Don't add abbreviation if it already has the exact same abbreviation.
-                if base_name.startswith(self._abbr_machine + "_"):
+                if base_name.startswith(prefix + "_"):
                     self._job_name = base_name
                 else:
-                    self._job_name = self._abbr_machine + "_" + base_name
+                    # If it already started with just the machine name, strip it to avoid duplication
+                    if base_name.startswith(self._abbr_machine + "_"):
+                        base_name = base_name[len(self._abbr_machine) + 1:]
+                    self._job_name = prefix + "_" + base_name
             else:
                 self._job_name = base_name
 
