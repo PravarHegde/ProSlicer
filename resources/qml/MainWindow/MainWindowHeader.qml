@@ -16,7 +16,11 @@ Rectangle
     color: UM.Theme.getColor("main_window_header_background")
 
     Column {
-        anchors.fill: parent
+        id: topColumn
+        anchors.top: parent.top
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: bottomContent.top
         anchors.margins: UM.Theme.getSize("default_margin").width
         spacing: 20
 
