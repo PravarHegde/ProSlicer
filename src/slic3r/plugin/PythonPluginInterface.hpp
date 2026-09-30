@@ -96,7 +96,7 @@ inline PluginCapabilityType plugin_capability_type_from_string(std::string_view 
 }
 
 struct PluginContext
-{ std::string orca_version; };
+{ std::string probharath_version; };
 
 enum class PluginResult { Success, Skipped, RecoverableError, FatalError };
 

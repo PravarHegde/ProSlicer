@@ -91,7 +91,7 @@ void install_slicing_pipeline_hook()
                         if (print.canceled())
                             throw CanceledException();
                         SlicingPipelineContext ctx;
-                        ctx.orca_version = SoftFever_VERSION;
+                        ctx.probharath_version = PROBHARATH_VERSION;
                         ctx.step   = step;
                         ctx.print  = &print;
                         ctx.object = object;

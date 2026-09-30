@@ -44,7 +44,7 @@ void SlicingPipelinePluginCapability::RegisterBindings(py::module_& module) {
         "Convert a scaled integer coordinate to millimeters (reads the live SCALING_FACTOR).");
 
     py::class_<SlicingPipelineContext>(slicing, "SlicingPipelineContext")
-        .def_readonly("orca_version", &SlicingPipelineContext::orca_version)
+        .def_readonly("probharath_version", &SlicingPipelineContext::probharath_version)
         .def_readonly("step", &SlicingPipelineContext::step)
         .def_readonly("gcode_path", &SlicingPipelineContext::gcode_path,
             "Path to the working G-code file, set ONLY at Step.psGCodePostProcess. Edit it in "

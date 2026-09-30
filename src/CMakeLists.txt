@@ -4,6 +4,21 @@ project(OrcaSlicer-native)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+if (APPLE)
+    if (TARGET TBB::tbb)
+        set_target_properties(TBB::tbb PROPERTIES IMPORTED_LOCATION "/usr/local/lib/libtbb.a")
+    endif()
+    if (TARGET TBB::tbbmalloc)
+        set_target_properties(TBB::tbbmalloc PROPERTIES IMPORTED_LOCATION "/usr/local/lib/libtbbmalloc.a")
+    endif()
+    if (TARGET OpenSSL::SSL)
+        set_target_properties(OpenSSL::SSL PROPERTIES IMPORTED_LOCATION "/usr/local/Cellar/openssl@3/3.6.3/lib/libssl.a")
+    endif()
+    if (TARGET OpenSSL::Crypto)
+        set_target_properties(OpenSSL::Crypto PROPERTIES IMPORTED_LOCATION "/usr/local/Cellar/openssl@3/3.6.3/lib/libcrypto.a")
+    endif()
+endif()
+
 # Include dev-utils for encoding check and other utilities
 add_subdirectory(dev-utils)
 # add_subdirectory(avrdude)
@@ -108,25 +123,25 @@ if (SLIC3R_GUI)
     add_subdirectory(slic3r)
 endif()
 
-if(ORCA_TOOLS)
-    # OrcaSlicer_profile_validator
-    if(APPLE)
-        add_executable(OrcaSlicer_profile_validator MACOSX_BUNDLE dev-utils/OrcaSlicer_profile_validator.cpp)
-        set_target_properties(OrcaSlicer_profile_validator PROPERTIES
-            MACOSX_BUNDLE TRUE
-            MACOSX_BUNDLE_BUNDLE_NAME "OrcaSlicer Profile Validator"
-            MACOSX_BUNDLE_BUNDLE_VERSION "${SLIC3R_VERSION}"
-            MACOSX_BUNDLE_SHORT_VERSION_STRING "${SLIC3R_VERSION}"
-            MACOSX_BUNDLE_IDENTIFIER "com.orcaslicer.OrcaSlicer.profile-validator"
-            MACOSX_BUNDLE_COPYRIGHT "© 2026 OrcaSlicer Pte Ltd All Rights Reserved"
-            MACOSX_BUNDLE_GUI_IDENTIFIER "com.orcaslicer.OrcaSlicer.profile-validator"
-        )
-    else()
-        add_executable(OrcaSlicer_profile_validator dev-utils/OrcaSlicer_profile_validator.cpp)
-    endif()
-    target_link_libraries(OrcaSlicer_profile_validator libslic3r boost_headeronly libcurl OpenSSL::SSL OpenSSL::Crypto)
-    target_compile_definitions(OrcaSlicer_profile_validator PRIVATE -DBOOST_ALL_NO_LIB -DBOOST_USE_WINAPI_VERSION=0x602 -DBOOST_SYSTEM_USE_UTF8)
-endif()
+# if(ORCA_TOOLS)
+#     # OrcaSlicer_profile_validator
+#     if(APPLE)
+#         add_executable(OrcaSlicer_profile_validator MACOSX_BUNDLE dev-utils/OrcaSlicer_profile_validator.cpp)
+#         set_target_properties(OrcaSlicer_profile_validator PROPERTIES
+#             MACOSX_BUNDLE TRUE
+#             MACOSX_BUNDLE_BUNDLE_NAME "OrcaSlicer Profile Validator"
+#             MACOSX_BUNDLE_BUNDLE_VERSION "${SLIC3R_VERSION}"
+#             MACOSX_BUNDLE_SHORT_VERSION_STRING "${SLIC3R_VERSION}"
+#             MACOSX_BUNDLE_IDENTIFIER "com.orcaslicer.OrcaSlicer.profile-validator"
+#             MACOSX_BUNDLE_COPYRIGHT "© 2026 OrcaSlicer Pte Ltd All Rights Reserved"
+#             MACOSX_BUNDLE_GUI_IDENTIFIER "com.orcaslicer.OrcaSlicer.profile-validator"
+#         )
+#     else()
+#         add_executable(OrcaSlicer_profile_validator dev-utils/OrcaSlicer_profile_validator.cpp)
+#     endif()
+#     target_link_libraries(OrcaSlicer_profile_validator libslic3r boost_headeronly libcurl OpenSSL::SSL OpenSSL::Crypto)
+#     target_compile_definitions(OrcaSlicer_profile_validator PRIVATE -DBOOST_ALL_NO_LIB -DBOOST_USE_WINAPI_VERSION=0x602 -DBOOST_SYSTEM_USE_UTF8)
+# endif()
 
 # Create a slic3r executable
 # Process manifests for various platforms.
@@ -339,10 +354,10 @@ else ()
             set(BIN_RESOURCES_DIR "${CMAKE_CURRENT_BINARY_DIR}/OrcaSlicer.app/Contents/Resources")
             set(BIN_DIR "${CMAKE_CURRENT_BINARY_DIR}/OrcaSlicer.app/Contents/MacOS")
         endif()
-        set(MACOSX_BUNDLE_ICON_FILE Icon.icns)
-        set(MACOSX_BUNDLE_BUNDLE_NAME "OrcaSlicer")
-        set(MACOSX_BUNDLE_SHORT_VERSION_STRING ${SoftFever_VERSION})
-        set(MACOSX_BUNDLE_COPYRIGHT "Copyright(C) 2022-2024 Li Jiang All Rights Reserved")
+        set(MACOSX_BUNDLE_ICON_FILE ProBharath.icns)
+        set(MACOSX_BUNDLE_BUNDLE_NAME "ProBharath")
+        set(MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROBHARATH_VERSION})
+        set(MACOSX_BUNDLE_COPYRIGHT "Copyright(C) 2026 ProBharath Technologies All Rights Reserved")
         if (XCODE)
             # Xcode's CodeSign phase fails on the bundled Python runtime's dotted
             # dirs (python3.12) under Contents/MacOS. Skip it for local dev builds

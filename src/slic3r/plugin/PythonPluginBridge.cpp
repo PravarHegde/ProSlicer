@@ -434,7 +434,7 @@ void bind_python_api(pybind11::module_& m)
 
     py::class_<PluginContext>(m, "PluginContext", "Context shared with plugin entry points")
         .def(py::init<>())
-        .def_readwrite("orca_version", &PluginContext::orca_version);
+        .def_readwrite("probharath_version", &PluginContext::probharath_version);
 
     py::class_<ExecutionResult>(m, "ExecutionResult", "Structured execution outcome")
         .def(py::init<>())

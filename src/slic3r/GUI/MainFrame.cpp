@@ -376,6 +376,21 @@ DPIFrame(NULL, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, BORDERLESS_FRAME_
     auto sizer_tobar = new wxBoxSizer(wxVERTICAL);
     panel_topbar->SetSizer(sizer_tobar);
     panel_topbar->Layout();
+    // ProBharath Mac Logo Injection
+    wxString logo_path = wxString::FromUTF8(Slic3r::resources_dir() + "/images/probharath_elephant.png");
+    wxImage logo_img;
+    if (logo_img.LoadFile(logo_path, wxBITMAP_TYPE_PNG)) {
+        logo_img.Rescale(FromDIP(48), FromDIP(48), wxIMAGE_QUALITY_HIGH);
+        auto* logo_bmp = new wxStaticBitmap(panel_topbar, wxID_ANY, wxBitmap(logo_img));
+        
+        auto* h_sizer = new wxBoxSizer(wxHORIZONTAL);
+        h_sizer->AddSpacer(80);
+        h_sizer->Add(logo_bmp, 0, wxALIGN_CENTER_VERTICAL | wxTOP | wxBOTTOM, FromDIP(5));
+        
+        sizer_tobar->Add(h_sizer, 0, wxEXPAND);
+        panel_topbar->Layout();
+    }
+
 #endif
 
     //wxAuiToolBar* toolbar = new wxAuiToolBar();
@@ -416,7 +431,7 @@ DPIFrame(NULL, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, BORDERLESS_FRAME_
     default:
     case GUI_App::EAppMode::Editor:
         m_taskbar_icon = std::make_unique<OrcaSlicerTaskBarIcon>(wxTBI_DOCK);
-        m_taskbar_icon->SetIcon(wxIcon(Slic3r::var("OrcaSlicer-mac_256px.ico"), wxBITMAP_TYPE_ICO), "OrcaSlicer");
+        m_taskbar_icon->SetIcon(wxIcon(Slic3r::var("OrcaSlicer-mac_256px.ico"), wxBITMAP_TYPE_ICO), SLIC3R_APP_KEY);
         break;
     case GUI_App::EAppMode::GCodeViewer:
         break;
@@ -1100,14 +1115,14 @@ void MainFrame::update_layout()
             m_tabpanel->InsertPage(prepare_pos++, TAB_ID_DESIGN, m_design_page, _L("Design"), "tab_design_active");
         }
 #endif
-        m_tabpanel->InsertPage(prepare_pos, TAB_ID_PREPARE, m_plater, _L("Prepare"), "tab_3d_active");
+        m_tabpanel->InsertPage(prepare_pos, TAB_ID_PREPARE, m_plater, _L("Additive 3D"), "tab_3d_active");
         m_tabpanel->InsertPage(prepare_pos + 1, TAB_ID_PREVIEW, m_plater, _L("Preview"), "tab_preview_active");
-        m_main_sizer->Add(m_tabpanel, 1, wxEXPAND | wxTOP, 0);
+                        m_main_sizer->Add(m_tabpanel, 1, wxEXPAND | wxTOP, 0);
 
         m_tabpanel->Bind(wxCUSTOMEVT_NOTEBOOK_SEL_CHANGED, [this](wxCommandEvent& evt)
         {
-            // jump to 3deditor under preview_only mode
-            if (evt.GetId() == m_tabpanel->FindPageByName(TAB_ID_PREPARE)) {
+            const wxString page_name = m_tabpanel->GetSelectedPageName();
+            if (page_name == TAB_ID_PREPARE) {
                 Sidebar& sidebar = GUI::wxGetApp().sidebar();
                 if (sidebar.need_auto_sync_after_connect_printer()) {
                     sidebar.set_need_auto_sync_after_connect_printer(false);
@@ -1118,6 +1133,18 @@ void MainFrame::update_layout()
 
                 if (!preview_only_hint())
                     return;
+            } else if (page_name == TAB_ID_LIGHT_CNC) {
+                m_plater->update(true);
+                if (m_plater && m_plater->get_notification_manager()) {
+                    m_plater->get_notification_manager()->push_notification(
+                        into_u8(_L("⚡ ProBharath Light CNC / PCB CAM Mode: Isolation Routing, Surface Probe, & Spindle RPM active.")));
+                }
+            } else if (page_name == TAB_ID_HEAVY_CNC) {
+                m_plater->update(true);
+                if (m_plater && m_plater->get_notification_manager()) {
+                    m_plater->get_notification_manager()->push_notification(
+                        into_u8(_L("⚙️ ProBharath Heavy Metal CNC Mode: Subtractive Toolpaths, Multi-Axis Roughing, & Feed Optimization active.")));
+                }
             }
             evt.Skip();
         });
@@ -1356,6 +1383,15 @@ void MainFrame::init_tabpanel() {
                 wxPostEvent(m_plater, SimpleEvent(EVT_GLVIEWTOOLBAR_PREVIEW));
                 m_param_panel->OnActivate();
             }
+            else if (m_last_selected_tab == TAB_ID_LIGHT_CNC) {
+                wxPostEvent(m_plater, SimpleEvent(EVT_GLVIEWTOOLBAR_3D));
+                m_param_panel->OnActivate();
+            }
+            else if (m_last_selected_tab == TAB_ID_HEAVY_CNC) {
+                wxPostEvent(m_plater, SimpleEvent(EVT_GLVIEWTOOLBAR_3D));
+                m_param_panel->OnActivate();
+            }
+
             fit_tab_labels(); // ORCA on switching prepare / preview
         }
         //else if (panel == m_param_panel)
@@ -2868,6 +2904,12 @@ void MainFrame::add_common_view_menu_items(wxMenu* view_menu, std::function<bool
         "", nullptr, [can_change_view]() { return can_change_view(); }, this);
     append_shortcut_item(view_menu, Shortcut::ViewRight, true, _L_CONTEXT("Right", "Camera View"), _L("Right View"), [this](wxCommandEvent &) { select_view("right"); },
         "", nullptr, [can_change_view]() { return can_change_view(); }, this);
+    view_menu->AppendSeparator();
+    append_menu_item(view_menu, wxID_ANY, _L("Toggle Sidebar\tShift+Tab"), _L("Collapse or Expand the parameters sidebar"),
+        [this](wxCommandEvent&) {
+            if (m_plater)
+                m_plater->collapse_sidebar(!m_plater->is_sidebar_collapsed());
+        }, "", nullptr, []() { return true; }, this);
 }
 
 void MainFrame::init_menubar_as_editor()
@@ -3552,6 +3594,38 @@ void MainFrame::init_menubar_as_editor()
         m_menubar->Append(editMenu, wxString::Format("&%s", _L_CONTEXT("Edit", "Menu")));
     if (viewMenu)
         m_menubar->Append(viewMenu, wxString::Format("&%s", _L("View")));
+
+    auto extensionsMenu = new wxMenu();
+    append_menu_item(
+        extensionsMenu, wxID_ANY, _L("ProBharath Plugin & Marketplace Manager..."), _L("Browse ProBharath, Cura, and Orca plugins"),
+        [](wxCommandEvent&) { wxGetApp().open_plugins_dialog(); }, "", nullptr, []() { return true; }, this);
+    extensionsMenu->AppendSeparator();
+    append_menu_item(
+        extensionsMenu, wxID_ANY, _L("Light CNC & PCB Trace Isolation CAM"), _L("Switch to PCB trace isolation and CNC milling"),
+        [this](wxCommandEvent&) {
+            select_tab(TAB_ID_LIGHT_CNC);
+        }, "", nullptr, []() { return true; }, this);
+    append_menu_item(
+        extensionsMenu, wxID_ANY, _L("Heavy Metal CNC CAM Post-Processor"), _L("Switch to industrial multi-axis subtractive CAM"),
+        [this](wxCommandEvent&) {
+            select_tab(TAB_ID_HEAVY_CNC);
+        }, "", nullptr, []() { return true; }, this);
+    append_menu_item(
+        extensionsMenu, wxID_ANY, _L("2D Vector Pen Plotter & Laser Module"), _L("Pen plotting servo lift and laser engraving"),
+        [this](wxCommandEvent&) {
+            select_tab(TAB_ID_LIGHT_CNC);
+            if (m_plater && m_plater->get_notification_manager()) {
+                m_plater->get_notification_manager()->push_notification(
+                    into_u8(_L("🖊️ ProBharath Pen Plotter & Laser 2D Mode: Servo Z-Lift & Vector Hatching active.")));
+            }
+        }, "", nullptr, []() { return true; }, this);
+    extensionsMenu->AppendSeparator();
+    append_menu_item(
+        extensionsMenu, wxID_ANY, _L("ProBharath AI Intelligence Config..."), _L("Configure AI cloud endpoints and model selection"),
+        [](wxCommandEvent&) {
+            wxGetApp().open_preferences(PreferencesTab::ProBharathAI);
+        }, "", nullptr, []() { return true; }, this);
+    m_menubar->Append(extensionsMenu, wxString::Format("&%s", _L("Extensions")));
     /*if (publishMenu)
         m_menubar->Append(publishMenu, wxString::Format("&%s", _L("3D Models")));*/
 
@@ -4130,6 +4204,13 @@ void MainFrame::select_tab(const wxString& id/* = wxString()*/)
 
         if (m_tabpanel->GetSelectedPageName() != new_selection)
             m_tabpanel->SelectPageByName(new_selection);
+        if (m_param_panel) {
+            if (id == TAB_ID_LIGHT_CNC) {
+            } else if (id == TAB_ID_HEAVY_CNC) {
+            } else if (id == TAB_ID_PREPARE || id == TAB_ID_PREVIEW) {
+            }
+        }
+
 #ifdef _MSW_DARK_MODE
         /*if (wxGetApp().tabs_as_menu()) {
             if (Tab* cur_tab = dynamic_cast<Tab*>(m_tabpanel->GetPage(new_selection)))
@@ -4140,7 +4221,7 @@ void MainFrame::select_tab(const wxString& id/* = wxString()*/)
 #endif
         // Intentionally `id`, not `new_selection`: the fallback-to-last-tab path must not
         // trigger this render even when the last selected tab was Prepare.
-        if (id == TAB_ID_PREPARE && m_layout == ESettingsLayout::Old)
+        if ((id == TAB_ID_PREPARE || id == TAB_ID_LIGHT_CNC || id == TAB_ID_HEAVY_CNC) && m_layout == ESettingsLayout::Old)
             m_plater->canvas3D()->render();
         else if (was_hidden) {
             Tab* cur_tab = dynamic_cast<Tab*>(m_tabpanel->GetPageByName(new_selection));

@@ -7,19 +7,9 @@ project(hints)
 # 2. An executable for the HintsToPot utility
 
 # Create the utility executable
-add_executable(hintsToPot
-    HintsToPot.cpp)
-
-# Set include directories for the executable
-target_include_directories(hintsToPot SYSTEM
-    PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}
-)
-
-# Link required libraries
-if(TARGET boost_libs)
-    target_link_libraries(hintsToPot PRIVATE boost_libs)
-endif()
+# add_executable(hintsToPot HintsToPot.cpp)
+# find_package(Boost REQUIRED COMPONENTS filesystem system)
+# target_link_libraries(hintsToPot PRIVATE Boost::filesystem Boost::system)
 
 # Create an interface library for other projects to use
 add_library(hints INTERFACE)
@@ -35,9 +25,9 @@ target_include_directories(hints SYSTEM
 target_compile_features(hints INTERFACE cxx_std_17)
 
 # Check if encoding_check function is available
-if(COMMAND encoding_check)
-    encoding_check(hintsToPot)
-endif()
+# if(COMMAND encoding_check)
+#    encoding_check(hintsToPot)
+# endif()
 
 
 

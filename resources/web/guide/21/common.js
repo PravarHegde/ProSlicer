@@ -89,20 +89,24 @@ function HandleModelList( pVal )
 		
 		let strVendor=OneModel['vendor'];
 		
+		let displayVendor = strVendor;
+		if (strVendor === "ProBharath") displayVendor = "Select Machine";
+		else displayVendor = "Custom Settings";
+
 		//Add Vendor Html Node
-		if($(".OneVendorBlock[vendor='"+strVendor+"']").length==0)
+		if($(".OneVendorBlock[vendor=\'"+displayVendor+"\']").length==0)
 		{
-			let HtmlNewVendor = CreateVendorBlock(strVendor);
+			let HtmlNewVendor = CreateVendorBlock(displayVendor);
 			$('#Content').append(HtmlNewVendor);
 		}
 		
 		let ModelName=OneModel['model'];
 		
 		//Collect Html Node Nozzel Html
-		if( !ModelHtml.hasOwnProperty(strVendor))
-			ModelHtml[strVendor]='';
+		if( !ModelHtml.hasOwnProperty(displayVendor))
+			ModelHtml[displayVendor]=\'\';
 			
-		ModelHtml[strVendor] += CreatePrinterBlock(OneModel); // ORCA
+		ModelHtml[displayVendor] += CreatePrinterBlock(OneModel); // ORCA
 	}
 	
 	//Update Nozzel Html Append
@@ -214,7 +218,7 @@ function FilterModelList(keyword) {
 
 		//Add Vendor Html Node
 		if ($(".OneVendorBlock[vendor='" + strVendor + "']").length == 0) {
-			let HtmlNewVendor = CreateVendorBlock(strVendor);
+			let HtmlNewVendor = CreateVendorBlock(displayVendor);
 			$('#Content').append(HtmlNewVendor);
 		}
 
@@ -269,12 +273,6 @@ function textInput(obj) {
 function CreateVendorBlock(vendorName)
 {
 	let alt = vendorName;
-	if( alt == "BBL" )
-		alt = "Bambu Lab";
-	if( alt == "Custom")
-		alt = "Custom Printer";
-	if( alt == "Other")
-		alt = "Orca colosseum";
 	
 	return 	'<div class="OneVendorBlock" Vendor="' + vendorName + '">' +
 			'	<div class="BlockBanner">' +

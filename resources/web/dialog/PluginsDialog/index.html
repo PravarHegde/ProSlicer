@@ -60,10 +60,20 @@
           Install plugin
         </button>
         <div id="exploreMenu" class="explore-menu" role="menu" hidden>
-          <button type="button" class="explore-menu-item" role="menuitem" data-install-action="explore">Install plugin</button>
-          <button type="button" class="explore-menu-item" role="menuitem" data-install-action="install-local">Install local plugin</button>
+          <button type="button" class="explore-menu-item" role="menuitem" data-install-action="probharath">ProBharath Marketplace</button>
+          <button type="button" class="explore-menu-item" role="menuitem" data-install-action="cura">Ultimaker Cura Marketplace</button>
+          <button type="button" class="explore-menu-item" role="menuitem" data-install-action="orca">Orca Plugin Market</button>
+          <button type="button" class="explore-menu-item" role="menuitem" data-install-action="install-local">Install local plugin (.whl / .py)</button>
         </div>
       </div>
+    </div>
+
+    <!-- Marketplace Filter Tabs -->
+    <div class="marketplace-tabs" style="display: flex; gap: 8px; padding: 8px 16px; background: rgba(16,18,24,0.7); border-bottom: 1px solid rgba(255,255,255,0.08);">
+      <button class="mkt-tab active" id="tab_all" onclick="filterMarketplace('all')" style="padding: 5px 12px; border-radius: 6px; border: none; background: #00E5FF; color: #0B0E14; font-weight: 700; font-size: 11.5px; cursor: pointer;">All Plugins</button>
+      <button class="mkt-tab" id="tab_probharath" onclick="filterMarketplace('probharath')" style="padding: 5px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.05); color: #FFF; font-weight: 600; font-size: 11.5px; cursor: pointer;">ProBharath CNC & AI</button>
+      <button class="mkt-tab" id="tab_cura" onclick="filterMarketplace('cura')" style="padding: 5px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.05); color: #FFF; font-weight: 600; font-size: 11.5px; cursor: pointer;">Cura Marketplace</button>
+      <button class="mkt-tab" id="tab_orca" onclick="filterMarketplace('orca')" style="padding: 5px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.05); color: #FFF; font-weight: 600; font-size: 11.5px; cursor: pointer;">Orca Hub</button>
     </div>
 
     <main class="content">

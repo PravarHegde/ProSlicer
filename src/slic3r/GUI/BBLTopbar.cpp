@@ -47,7 +47,7 @@ CenteredTitle::CenteredTitle(wxWindow* parent)
     Create(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE);
     Bind(wxEVT_PAINT, [this](wxPaintEvent&) {
         wxBufferedPaintDC dc(this);
-        dc.SetBackground(wxBrush(wxColour(38, 46, 48)));
+        dc.SetBackground(wxBrush(wxColour(18, 21, 30)));
         dc.Clear();
 
         dc.SetTextForeground(*wxWHITE);
@@ -103,7 +103,7 @@ public:
 
 void BBLTopbarArt::DrawBackground(wxDC& dc, wxWindow* wnd, const wxRect& rect)
 {
-    dc.SetBrush(wxBrush(wxColour(38, 46, 48)));
+    dc.SetBrush(wxBrush(wxColour(13, 15, 24)));
     wxRect clipRect = rect;
     clipRect.y -= 8;
     clipRect.height += 8;
@@ -241,13 +241,13 @@ void BBLTopbar::Init(wxFrame* parent)
     window_btns_on_left = wxGetApp().app_config->get("window_buttons_on_left")  == "true";
 
     if(window_btns_on_left){
-        wxBitmap close_bitmap = create_scaled_bitmap("topbar_close", nullptr, TOPBAR_ICON_SIZE);
+        wxBitmap close_bitmap = create_scaled_bitmap("topbar_close", nullptr, 48);
         wxAuiToolBarItem* close_btn = this->AddTool(wxID_CLOSE_FRAME, "", close_bitmap);
 
         this->AddSpacer(FromDIP(4));
 
-        maximize_bitmap = create_scaled_bitmap("topbar_max", nullptr, TOPBAR_ICON_SIZE);
-        window_bitmap = create_scaled_bitmap("topbar_win", nullptr, TOPBAR_ICON_SIZE);
+        maximize_bitmap = create_scaled_bitmap("topbar_max", nullptr, 48);
+        window_bitmap = create_scaled_bitmap("topbar_win", nullptr, 48);
         if (m_frame->IsMaximized()) {
             maximize_btn = this->AddTool(wxID_MAXIMIZE_FRAME, "", window_bitmap);
         }
@@ -257,7 +257,7 @@ void BBLTopbar::Init(wxFrame* parent)
 
         this->AddSpacer(FromDIP(4));
 
-        wxBitmap iconize_bitmap = create_scaled_bitmap("topbar_min", nullptr, TOPBAR_ICON_SIZE);
+        wxBitmap iconize_bitmap = create_scaled_bitmap("topbar_min", nullptr, 48);
         wxAuiToolBarItem* iconize_btn = this->AddTool(wxID_ICONIZE_FRAME, "", iconize_bitmap);
 
         this->AddSpacer(15);
@@ -267,19 +267,15 @@ void BBLTopbar::Init(wxFrame* parent)
     if(!window_btns_on_left)
         this->AddSpacer(5);
 
-    /*wxBitmap logo_bitmap = create_scaled_bitmap("topbar_logo", nullptr, TOPBAR_ICON_SIZE);
-    wxAuiToolBarItem* logo_item = this->AddTool(ID_LOGO, "", logo_bitmap);
-    logo_item->SetHoverBitmap(logo_bitmap);
-    logo_item->SetActive(false);*/
 
-    wxBitmap file_bitmap = create_scaled_bitmap("topbar_file", nullptr, TOPBAR_ICON_SIZE);
+    wxBitmap file_bitmap = create_scaled_bitmap("topbar_file", nullptr, 48);
     m_file_menu_item = this->AddTool(ID_TOP_FILE_MENU, _L("File"), file_bitmap, wxEmptyString, wxITEM_NORMAL);
 
     this->SetForegroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHTTEXT));
 
     this->AddSpacer(FromDIP(5));
 
-    wxBitmap dropdown_bitmap = create_scaled_bitmap("topbar_dropdown", nullptr, TOPBAR_ICON_SIZE);
+    wxBitmap dropdown_bitmap = create_scaled_bitmap("topbar_dropdown", nullptr, 48);
     m_dropdown_menu_item = this->AddTool(ID_TOP_DROPDOWN_MENU, "",
         dropdown_bitmap, wxEmptyString);
 
@@ -287,32 +283,32 @@ void BBLTopbar::Init(wxFrame* parent)
     this->AddSeparator();
     this->AddSpacer(FromDIP(5));
 
-    //wxBitmap open_bitmap = create_scaled_bitmap("topbar_open", nullptr, TOPBAR_ICON_SIZE);
+    //wxBitmap open_bitmap = create_scaled_bitmap("topbar_open", nullptr, 48);
     //wxAuiToolBarItem* tool_item = this->AddTool(wxID_OPEN, "", open_bitmap);
 
     this->AddSpacer(FromDIP(10));
 
-    wxBitmap save_bitmap = create_scaled_bitmap("topbar_save", nullptr, TOPBAR_ICON_SIZE);
+    wxBitmap save_bitmap = create_scaled_bitmap("topbar_save", nullptr, 48);
     wxAuiToolBarItem* save_btn = this->AddTool(wxID_SAVE, "", save_bitmap);
 
     this->AddSpacer(FromDIP(10));
 
-    wxBitmap undo_bitmap = create_scaled_bitmap("topbar_undo", nullptr, TOPBAR_ICON_SIZE);
+    wxBitmap undo_bitmap = create_scaled_bitmap("topbar_undo", nullptr, 48);
     m_undo_item = this->AddTool(wxID_UNDO, "", undo_bitmap);
-    wxBitmap undo_inactive_bitmap = create_scaled_bitmap("topbar_undo_inactive", nullptr, TOPBAR_ICON_SIZE);
+    wxBitmap undo_inactive_bitmap = create_scaled_bitmap("topbar_undo_inactive", nullptr, 48);
     m_undo_item->SetDisabledBitmap(undo_inactive_bitmap);
 
     this->AddSpacer(FromDIP(10));
 
-    wxBitmap redo_bitmap = create_scaled_bitmap("topbar_redo", nullptr, TOPBAR_ICON_SIZE);
+    wxBitmap redo_bitmap = create_scaled_bitmap("topbar_redo", nullptr, 48);
     m_redo_item = this->AddTool(wxID_REDO, "", redo_bitmap);
-    wxBitmap redo_inactive_bitmap = create_scaled_bitmap("topbar_redo_inactive", nullptr, TOPBAR_ICON_SIZE);
+    wxBitmap redo_inactive_bitmap = create_scaled_bitmap("topbar_redo_inactive", nullptr, 48);
     m_redo_item->SetDisabledBitmap(redo_inactive_bitmap);
 
     this->AddSpacer(FromDIP(10));
 
-    wxBitmap calib_bitmap          = create_scaled_bitmap("calib_sf", nullptr, TOPBAR_ICON_SIZE);
-    wxBitmap calib_bitmap_inactive = create_scaled_bitmap("calib_sf_inactive", nullptr, TOPBAR_ICON_SIZE);
+    wxBitmap calib_bitmap          = create_scaled_bitmap("calib_sf", nullptr, 48);
+    wxBitmap calib_bitmap_inactive = create_scaled_bitmap("calib_sf_inactive", nullptr, 48);
     m_calib_item                   = this->AddTool(ID_CALIB, _L("Calibration"), calib_bitmap);
     m_calib_item->SetDisabledBitmap(calib_bitmap_inactive);
 
@@ -327,14 +323,14 @@ void BBLTopbar::Init(wxFrame* parent)
     this->AddSpacer(FromDIP(25));
     //this->AddStretchSpacer(1);
 
-    //m_publish_bitmap = create_scaled_bitmap("topbar_publish", nullptr, TOPBAR_ICON_SIZE);
+    //m_publish_bitmap = create_scaled_bitmap("topbar_publish", nullptr, 48);
     //m_publish_item = this->AddTool(ID_PUBLISH, "", m_publish_bitmap);
-    //m_publish_disable_bitmap = create_scaled_bitmap("topbar_publish_disable", nullptr, TOPBAR_ICON_SIZE);
+    //m_publish_disable_bitmap = create_scaled_bitmap("topbar_publish_disable", nullptr, 48);
     //m_publish_item->SetDisabledBitmap(m_publish_disable_bitmap);
     //this->EnableTool(m_publish_item->GetId(), false);
     //this->AddSpacer(FromDIP(4));
 
-    /*wxBitmap model_store_bitmap = create_scaled_bitmap("topbar_store", nullptr, TOPBAR_ICON_SIZE);
+    /*wxBitmap model_store_bitmap = create_scaled_bitmap("topbar_store", nullptr, 48);
     m_model_store_item = this->AddTool(ID_MODEL_STORE, "", model_store_bitmap);
     this->AddSpacer(12);
     */
@@ -343,13 +339,13 @@ void BBLTopbar::Init(wxFrame* parent)
     //this->AddSpacer(FromDIP(4));
 
     if(!window_btns_on_left){
-    wxBitmap iconize_bitmap = create_scaled_bitmap("topbar_min", nullptr, TOPBAR_ICON_SIZE);
+    wxBitmap iconize_bitmap = create_scaled_bitmap("topbar_min", nullptr, 48);
     wxAuiToolBarItem* iconize_btn = this->AddTool(wxID_ICONIZE_FRAME, "", iconize_bitmap);
 
     this->AddSpacer(FromDIP(4));
 
-    maximize_bitmap = create_scaled_bitmap("topbar_max", nullptr, TOPBAR_ICON_SIZE);
-    window_bitmap = create_scaled_bitmap("topbar_win", nullptr, TOPBAR_ICON_SIZE);
+    maximize_bitmap = create_scaled_bitmap("topbar_max", nullptr, 48);
+    window_bitmap = create_scaled_bitmap("topbar_win", nullptr, 48);
     if (m_frame->IsMaximized()) {
         maximize_btn = this->AddTool(wxID_MAXIMIZE_FRAME, "", window_bitmap);
     }
@@ -359,7 +355,7 @@ void BBLTopbar::Init(wxFrame* parent)
 
     this->AddSpacer(FromDIP(4));
 
-    wxBitmap close_bitmap = create_scaled_bitmap("topbar_close", nullptr, TOPBAR_ICON_SIZE);
+    wxBitmap close_bitmap = create_scaled_bitmap("topbar_close", nullptr, 48);
     wxAuiToolBarItem* close_btn = this->AddTool(wxID_CLOSE_FRAME, "", close_bitmap);
     }
 
@@ -579,8 +575,8 @@ void BBLTopbar::Rescale() {
     item->SetBitmap(create_scaled_bitmap("topbar_min", this, TOPBAR_ICON_SIZE));
 
     item = this->FindTool(wxID_MAXIMIZE_FRAME);
-    maximize_bitmap = create_scaled_bitmap("topbar_max", this, TOPBAR_ICON_SIZE);
-    window_bitmap   = create_scaled_bitmap("topbar_win", this, TOPBAR_ICON_SIZE);
+    maximize_bitmap = create_scaled_bitmap("topbar_max", this, 48);
+    window_bitmap   = create_scaled_bitmap("topbar_win", this, 48);
     if (m_frame->IsMaximized()) {
         item->SetBitmap(window_bitmap);
     }

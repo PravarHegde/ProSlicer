@@ -73,7 +73,7 @@ endif ()
 # project() reads this, so set it first.
 set(CMAKE_USER_MAKE_RULES_OVERRIDE "${CMAKE_CURRENT_LIST_DIR}/cmake/modules/ClangClShowIncludes.cmake")
 
-project(OrcaSlicer)
+project(ProSlicer)
 
 # Backward compatibility for old CMake versions
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_VERSION VERSION_LESS "3.25")
@@ -821,6 +821,22 @@ endif()
 set(TBB_DEBUG 1)
 set(CMAKE_MAP_IMPORTED_CONFIG_RELWITHDEBINFO RelWithDebInfo Release "")
 find_package(TBB REQUIRED)
+if (APPLE)
+    if (TARGET TBB::tbb)
+        set_target_properties(TBB::tbb PROPERTIES
+            IMPORTED_LOCATION "/usr/local/lib/libtbb.a"
+            IMPORTED_LOCATION_RELEASE "/usr/local/lib/libtbb.a"
+            IMPORTED_LOCATION_DEBUG "/usr/local/lib/libtbb.a"
+            IMPORTED_LOCATION_RELWITHDEBINFO "/usr/local/lib/libtbb.a")
+    endif()
+    if (TARGET TBB::tbbmalloc)
+        set_target_properties(TBB::tbbmalloc PROPERTIES
+            IMPORTED_LOCATION "/usr/local/lib/libtbbmalloc.a"
+            IMPORTED_LOCATION_RELEASE "/usr/local/lib/libtbbmalloc.a"
+            IMPORTED_LOCATION_DEBUG "/usr/local/lib/libtbbmalloc.a"
+            IMPORTED_LOCATION_RELWITHDEBINFO "/usr/local/lib/libtbbmalloc.a")
+    endif()
+endif()
 # include_directories(SYSTEM ${TBB_INCLUDE_DIRS})
 # add_definitions(${TBB_DEFINITIONS})
 # if(MSVC)
@@ -831,6 +847,22 @@ find_package(TBB REQUIRED)
 # add_definitions(-DTBB_USE_CAPTURED_EXCEPTION=0)
 
 find_package(OpenSSL REQUIRED)
+if (APPLE)
+    if (TARGET OpenSSL::SSL)
+        set_target_properties(OpenSSL::SSL PROPERTIES
+            IMPORTED_LOCATION "/usr/local/Cellar/openssl@3/3.6.3/lib/libssl.a"
+            IMPORTED_LOCATION_RELEASE "/usr/local/Cellar/openssl@3/3.6.3/lib/libssl.a"
+            IMPORTED_LOCATION_DEBUG "/usr/local/Cellar/openssl@3/3.6.3/lib/libssl.a"
+            IMPORTED_LOCATION_RELWITHDEBINFO "/usr/local/Cellar/openssl@3/3.6.3/lib/libssl.a")
+    endif()
+    if (TARGET OpenSSL::Crypto)
+        set_target_properties(OpenSSL::Crypto PROPERTIES
+            IMPORTED_LOCATION "/usr/local/Cellar/openssl@3/3.6.3/lib/libcrypto.a"
+            IMPORTED_LOCATION_RELEASE "/usr/local/Cellar/openssl@3/3.6.3/lib/libcrypto.a"
+            IMPORTED_LOCATION_DEBUG "/usr/local/Cellar/openssl@3/3.6.3/lib/libcrypto.a"
+            IMPORTED_LOCATION_RELWITHDEBINFO "/usr/local/Cellar/openssl@3/3.6.3/lib/libcrypto.a")
+    endif()
+endif()
 find_package(CURL REQUIRED)
 find_package(Freetype REQUIRED)
 
@@ -914,7 +946,7 @@ add_custom_target(gettext_make_pot
     COMMAND xgettext --keyword=L --keyword=_L --keyword=_u8L --keyword=L_CONTEXT:1,2c --keyword=_L_CONTEXT:1,2c --keyword=_u8L_CONTEXT:1,2c --keyword=_L_PLURAL:1,2 --add-comments=TRN --from-code=UTF-8 --no-location --debug --boost
         -f "${BBL_L18N_DIR}/list.txt"
         -o "${BBL_L18N_DIR}/OrcaSlicer.pot"
-    COMMAND hintsToPot ${SLIC3R_RESOURCES_DIR} ${BBL_L18N_DIR}
+    # COMMAND hintsToPot ${SLIC3R_RESOURCES_DIR} ${BBL_L18N_DIR}
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
     COMMENT "Generate pot file from strings in the source tree"
 )
@@ -1235,7 +1267,7 @@ endif ()
 add_subdirectory(src)
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT OrcaSlicer_app_gui)
 
-add_dependencies(gettext_make_pot hintsToPot)
+# add_dependencies(gettext_make_pot hintsToPot)
 
 if(SLIC3R_BUILD_SANDBOXES)
     add_subdirectory(sandboxes)
@@ -1308,12 +1340,12 @@ endif ()
 install(FILES ${CMAKE_SOURCE_DIR}/LICENSE.txt DESTINATION ".")
 configure_file(${LIBDIR}/dev-utils/platform/unix/fhs.hpp.in ${LIBDIR_BIN}/dev-utils/platform/unix/fhs.hpp)
 
-set (CPACK_PACKAGE_NAME "OrcaSlicer")
+set (CPACK_PACKAGE_NAME "ProSlicer")
 set (CPACK_PACKAGE_VENDOR "SoftFever")
-set (CPACK_PACKAGE_VERSION_MAJOR "${ORCA_VERSION_MAJOR}")
-set (CPACK_PACKAGE_VERSION_MINOR "${ORCA_VERSION_MINOR}")
-set (CPACK_PACKAGE_VERSION_PATCH "${ORCA_VERSION_PATCH}")
-set (CPACK_PACKAGE_FILE_NAME "OrcaSlicer_Windows_Installer_V${SoftFever_VERSION}")
+set (CPACK_PACKAGE_VERSION_MAJOR "${PROBHARATH_VERSION_MAJOR}")
+set (CPACK_PACKAGE_VERSION_MINOR "${PROBHARATH_VERSION_MINOR}")
+set (CPACK_PACKAGE_VERSION_PATCH "${PROBHARATH_VERSION_PATCH}")
+set (CPACK_PACKAGE_FILE_NAME "ProSlicer_Windows_Installer_V${PROBHARATH_VERSION}")
 # Suffix the Windows installer with its target arch so the x64 and arm64 builds
 # produce distinct filenames (matches ARCH_SUFFIX in build_orca.yml). Same
 # CMAKE_SYSTEM_PROCESSOR mapping used by orcaslicer_copy_dlls() above.
@@ -1325,18 +1357,18 @@ if (WIN32)
     endif ()
 endif ()
 set (CPACK_PACKAGE_DESCRIPTION_SUMMARY "Orca Slicer is an open source slicer for FDM printers")
-set (CPACK_PACKAGE_HOMEPAGE_URL "https://github.com/OrcaSlicer/OrcaSlicer")
+set (CPACK_PACKAGE_HOMEPAGE_URL "https://github.com/ProBharath/ProSlicer")
 set (CPACK_PACKAGE_INSTALL_DIRECTORY ${CPACK_PACKAGE_NAME})
-set (CPACK_PACKAGE_ICON "${CMAKE_SOURCE_DIR}/resources/images\\\\OrcaSlicer.ico")
+set (CPACK_PACKAGE_ICON "${CMAKE_SOURCE_DIR}/resources/images\\\\ProSlicer.ico")
 set (CPACK_NSIS_MUI_ICON "${CPACK_PACKAGE_ICON}")
 set (CPACK_NSIS_MUI_UNIICON "${CPACK_PACKAGE_ICON}")
 set (CPACK_NSIS_INSTALLED_ICON_NAME  "$INSTDIR\\\\orca-slicer.exe")
 set (CPACK_PACKAGE_CHECKSUM SHA256)
-set (CPACK_PACKAGE_INSTALL_REGISTRY_KEY "OrcaSlicer")
+set (CPACK_PACKAGE_INSTALL_REGISTRY_KEY "ProSlicer")
 set (CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
 set (CPACK_NSIS_EXECUTABLES_DIRECTORY ".")
 # set (CPACK_NSIS_MODIFY_PATH "ON")
-set(CPACK_PACKAGE_EXECUTABLES "orca-slicer;OrcaSlicer")
+set(CPACK_PACKAGE_EXECUTABLES "pro-slicer;ProSlicer")
 set(CPACK_CREATE_DESKTOP_LINKS "orca-slicer")
 set (CPACK_RESOURCE_FILE_LICENSE ${CMAKE_SOURCE_DIR}/LICENSE.txt) # must also include in install command
 

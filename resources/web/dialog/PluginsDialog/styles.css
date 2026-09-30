@@ -907,6 +907,22 @@ body.pane-resizing {
   font-weight: 600;
   line-height: 17px;
   white-space: nowrap;
+.plugin-source-badge.source-probharath {
+  background: rgba(0, 229, 255, 0.18);
+  color: #00E5FF;
+  border: 1px solid rgba(0, 229, 255, 0.4);
+}
+
+.plugin-source-badge.source-cura {
+  background: rgba(0, 102, 255, 0.18);
+  color: #389BFF;
+  border: 1px solid rgba(56, 155, 255, 0.4);
+}
+
+.plugin-source-badge.source-orca {
+  background: rgba(0, 204, 136, 0.18);
+  color: #00E699;
+  border: 1px solid rgba(0, 230, 153, 0.4);
 }
 
 .plugin-source-badge.source-local {

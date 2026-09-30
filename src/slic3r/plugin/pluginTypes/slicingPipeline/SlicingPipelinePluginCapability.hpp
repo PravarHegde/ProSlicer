@@ -14,7 +14,7 @@ namespace Slic3r {
 // containers, like std::vector iterators) live in
 // src/slic3r/plugin/host/PluginHostSlicing.cpp.
 struct SlicingPipelineContext {
-    std::string          orca_version;
+    std::string          probharath_version;
     SlicingPipelineStepPlugin  step { SlicingPipelineStepPlugin::posSlice };
     Print*               print  { nullptr };   // present for in-pipeline steps; null at psGCodePostProcess
     const PrintObject*   object { nullptr };   // null for print-wide steps and psGCodePostProcess

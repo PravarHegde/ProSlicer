@@ -236,6 +236,10 @@ std::vector<std::string> get_plugin_directories(const std::string& cloud_user_id
     // Local plugins: {data_dir}/orca_plugins/
     add_or_create_dir(fs::path(data_dir()) / "orca_plugins");
 
+    // Bundled resources plugins: {resources_dir}/plugins and {resources_dir}/orca_plugins
+    add_or_create_dir(fs::path(resources_dir()) / "plugins");
+    add_or_create_dir(fs::path(resources_dir()) / "orca_plugins");
+
     // Cloud plugins: {data_dir}/orca_plugins/_subscribed/{user_id}/
     if (!cloud_user_id.empty())
         add_or_create_dir(fs::path(get_cloud_plugin_dir(cloud_user_id)));

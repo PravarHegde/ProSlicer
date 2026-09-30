@@ -1632,17 +1632,17 @@ void PreferencesDialog::create_items()
     auto item_default_page     = create_item_combobox(_L("Default page"), _L("Set the page opened on startup."), "default_page", DefaultPage);
     g_sizer->Add(item_default_page);
 
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__APPLE__)
     auto item_darkmode         = create_item_darkmode(_L("Enable dark Mode"), "", "dark_color_mode");
     g_sizer->Add(item_darkmode);
 #endif
 
-    auto item_single_instance  = create_item_checkbox(_L("Allow only one OrcaSlicer instance"),
+    auto item_single_instance  = create_item_checkbox(_L("Allow only one ProBharath instance"),
     #if __APPLE__
             _L("On OSX there is always only one instance of app running by default. However it is allowed to run multiple instances "
                 "of same app from the command line. In such case this settings will allow only one instance."),
     #else
-            _L("If this is enabled, when starting OrcaSlicer and another instance of the same OrcaSlicer is already running, that instance will be reactivated instead."),
+            _L("If this is enabled, when starting ProBharath and another instance of the same ProBharath is already running, that instance will be reactivated instead."),
     #endif
             "single_instance");
     g_sizer->Add(item_single_instance);
@@ -1824,7 +1824,7 @@ void PreferencesDialog::create_items()
 
     auto item_auto_reslice = create_item_auto_reslice(
         _L("Auto slice after changes"),
-        _L("If enabled, OrcaSlicer will re-slice automatically whenever slicing-related settings change."),
+        _L("If enabled, ProBharath will re-slice automatically whenever slicing-related settings change."),
         _L("Delay in seconds before auto slicing starts, allowing multiple edits to be grouped. Use 0 to slice immediately."));
     g_sizer->Add(item_auto_reslice);
 
@@ -2090,7 +2090,7 @@ void PreferencesDialog::create_items()
     auto item_region           = create_item_region_combobox(_L("Login region"), "");
     g_sizer->Add(item_region);
  
-    auto item_stealth_mode     = create_item_checkbox(_L("Stealth mode"), _L("This disables all cloud features, including Orca Cloud profile syncing. Users who prefer to work entirely offline can enable this option.\nNote: When Stealth Mode is enabled, your user profiles will not be backed up to Orca Cloud."), "stealth_mode");
+    auto item_stealth_mode     = create_item_checkbox(_L("Offline mode"), _L("This disables all cloud features, including Orca Cloud profile syncing. Users who prefer to work entirely offline can enable this option.\nNote: When Offline Mode is enabled, your user profiles will not be backed up to Orca Cloud."), "stealth_mode");
     g_sizer->Add(item_stealth_mode);
 
     auto item_hide_login_side_panel = create_item_checkbox(_L("Hide login side panel"), _L("Hide the login side panel on the home page."), "hide_login_side_panel");
@@ -2150,6 +2150,50 @@ void PreferencesDialog::create_items()
     sizer_page->Add(g_sizer, 0, wxEXPAND);
 
     //////////////////////////
+    //// PROBHARATH AI TAB 
+    /////////////////////////////////////
+    m_tab_index[PreferencesTab::ProBharathAI] = m_pref_tabs->AppendItem(_L("ProBharath AI"));
+    f_sizers.push_back(new wxFlexGridSizer(1, 1, v_gap, 0));
+    g_sizer = f_sizers.back();
+    g_sizer->AddGrowableCol(0, 1);
+
+    g_sizer->Add(create_item_title(_L("ProBharath AI Engine")), 1, wxEXPAND);
+
+    auto item_ai_enable = create_item_checkbox(_L("Enable ProBharath AI Intelligence"), 
+        _L("Enables AI auto-orientation, smart structural support detection, and defect prevention."), 
+        "probharath_ai_enabled");
+    g_sizer->Add(item_ai_enable);
+
+    auto item_ai_endpoint = create_item_input(_L("AI Endpoint URL"), "", 
+        _L("Cloud inference or local engine URL (Default: https://api.probharath.com/v1/slice-intelligence)"), 
+        "probharath_ai_endpoint", nullptr);
+    g_sizer->Add(item_ai_endpoint);
+
+    auto item_ai_key = create_item_input(_L("ProBharath API Key"), "", 
+        _L("Your ProBharath developer or enterprise license key"), 
+        "probharath_ai_api_key", nullptr);
+    g_sizer->Add(item_ai_key);
+
+    std::vector<wxString> aiModels = {_L("Cloud Neural Engine (ProBharath Turbo)"), _L("Local On-Device (GGUF / ONNX)"), _L("Hybrid Smart Router")};
+    auto item_ai_model = create_item_combobox(_L("Inference Provider"), 
+        _L("Choose whether model calculations run locally or via ProBharath high-speed cloud compute."), 
+        "probharath_ai_model_mode", aiModels);
+    g_sizer->Add(item_ai_model);
+
+    auto item_ai_auto_orient = create_item_checkbox(_L("Automated AI Build Plate Orientation"), 
+        _L("Use neural networks to automatically orient models to minimize overhangs and maximize strength."), 
+        "probharath_ai_auto_orient");
+    g_sizer->Add(item_ai_auto_orient);
+
+    auto item_ai_smart_supports = create_item_checkbox(_L("AI Smart Tree Support Optimization"), 
+        _L("Dynamically computes organic branching tree supports to save up to 40% filament."), 
+        "probharath_ai_smart_supports");
+    g_sizer->Add(item_ai_smart_supports);
+
+    g_sizer->AddSpacer(FromDIP(10));
+    sizer_page->Add(g_sizer, 0, wxEXPAND);
+
+    //////////////////////////
     //// ASSOCIATE TAB 
     /////////////////////////////////////
 #ifdef _WIN32
@@ -2179,22 +2223,22 @@ void PreferencesDialog::create_items()
     g_sizer->AddGrowableCol(0, 1);
 
     //// ASSOCIATE > Extensions
-    g_sizer->Add(create_item_title(_L("Associate files to OrcaSlicer")), 1, wxEXPAND);
+    g_sizer->Add(create_item_title(_L("Associate files to ProBharath")), 1, wxEXPAND);
 
-    auto item_associate_3mf    = create_item_checkbox(_L("Associate 3MF files to OrcaSlicer"), _L("If enabled, this sets OrcaSlicer as the default application to open 3MF files.") , "associate_3mf");
+    auto item_associate_3mf    = create_item_checkbox(_L("Associate 3MF files to ProBharath"), _L("If enabled, this sets ProBharath as the default application to open 3MF files.") , "associate_3mf");
     g_sizer->Add(item_associate_3mf);
 
-    auto item_associate_drc = create_item_checkbox(_L("Associate DRC files to OrcaSlicer"), _L("If enabled, sets OrcaSlicer as default application to open DRC files."), "associate_drc");
+    auto item_associate_drc = create_item_checkbox(_L("Associate DRC files to ProBharath"), _L("If enabled, sets ProBharath as default application to open DRC files."), "associate_drc");
     g_sizer->Add(item_associate_drc);
 
-    auto item_associate_stl    = create_item_checkbox(_L("Associate STL files to OrcaSlicer"), _L("If enabled, this sets OrcaSlicer as the default application to open STL files.") , "associate_stl");
+    auto item_associate_stl    = create_item_checkbox(_L("Associate STL files to ProBharath"), _L("If enabled, this sets ProBharath as the default application to open STL files.") , "associate_stl");
     g_sizer->Add(item_associate_stl);
 
-    auto item_associate_step   = create_item_checkbox(_L("Associate STEP files to OrcaSlicer"), _L("If enabled, this sets OrcaSlicer as the default application to open STEP files."), "associate_step");
+    auto item_associate_step   = create_item_checkbox(_L("Associate STEP files to ProBharath"), _L("If enabled, this sets ProBharath as the default application to open STEP files."), "associate_step");
     g_sizer->Add(item_associate_step);
 
     //// ASSOCIATE > WebLinks
-    g_sizer->Add(create_item_title(_L("Associate web links to OrcaSlicer")), 1, wxEXPAND);
+    g_sizer->Add(create_item_title(_L("Associate web links to ProBharath")), 1, wxEXPAND);
 
     auto associate_url_prusa   = create_item_link_association(L"prusaslicer", "Printables.com");
     g_sizer->Add(associate_url_prusa);

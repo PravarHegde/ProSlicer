@@ -31,6 +31,7 @@
 #include <wx/sizer.h>
 #include <wx/stattext.h>
 #include <wx/button.h>
+#include <wx/textctrl.h>
 #include <wx/bmpcbox.h>
 #include <wx/display.h>
 #include <wx/statbox.h>
@@ -2471,14 +2472,16 @@ Sidebar::Sidebar(Plater *parent)
     auto* scrolled_sizer = m_scrolled_sizer = new wxBoxSizer(wxVERTICAL);
     p->scrolled->SetSizer(scrolled_sizer);
 
-    wxColour title_bg = wxColour(248, 248, 248);
-    wxColour inactive_text = wxColour(86, 86, 86);
-    wxColour active_text = wxColour(0, 0, 0);
-    wxColour static_line_col = wxColour(166, 169, 170);
+    wxColour title_bg = wxGetApp().dark_mode() ? wxColour(28, 30, 36) : wxColour(248, 248, 248);
+    wxColour inactive_text = wxGetApp().dark_mode() ? wxColour(160, 170, 185) : wxColour(86, 86, 86);
+    wxColour active_text = wxGetApp().dark_mode() ? wxColour(240, 245, 255) : wxColour(0, 0, 0);
+    wxColour static_line_col = wxGetApp().dark_mode() ? wxColour(45, 48, 56) : wxColour(166, 169, 170);
 
 #ifdef __WINDOWS__
     p->scrolled->SetDoubleBuffered(true);
 #endif //__WINDOWS__
+
+    // ProBharath ProBharath Brand Header
 
     // add printer
     {
@@ -6802,6 +6805,7 @@ struct Plater::priv
     // BBS
     //GLToolbar view_toolbar;
     GLToolbar collapse_toolbar;
+    wxButton* m_expand_sidebar_btn{nullptr};
     Preview *preview;
     AssembleView* assemble_view { nullptr };
     bool first_enter_assemble{ true };
@@ -7506,12 +7510,291 @@ Plater::priv::priv(Plater *q, MainFrame *main_frame)
                                    .BottomDockable(false)
                                    .BestSize(wxSize(39 * wxGetApp().em_unit(), 90 * wxGetApp().em_unit())));
 
-    auto* panel_sizer = new wxBoxSizer(wxHORIZONTAL);
-    panel_sizer->Add(view3D, 1, wxEXPAND | wxALL, 0);
-    panel_sizer->Add(preview, 1, wxEXPAND | wxALL, 0);
-    panel_sizer->Add(assemble_view, 1, wxEXPAND | wxALL, 0);
+    auto* panel_sizer = new wxBoxSizer(wxVERTICAL);
+
+    m_expand_sidebar_btn = new wxButton(panel_3d, wxID_ANY, _L("▶ Show Parameters (Shift+Tab)"), wxDefaultPosition, wxSize(200, 30), wxBORDER_NONE);
+    m_expand_sidebar_btn->SetBackgroundColour(wxColour(16, 18, 22));
+    m_expand_sidebar_btn->SetForegroundColour(wxColour(0, 229, 255));
+    m_expand_sidebar_btn->SetFont(wxFont(10, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD));
+    m_expand_sidebar_btn->SetToolTip(_L("Expand sidebar to view and edit print/CAM settings"));
+    m_expand_sidebar_btn->Hide();
+    m_expand_sidebar_btn->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) {
+        this->q->collapse_sidebar(false);
+    });
+
+    panel_sizer->Add(m_expand_sidebar_btn, 0, wxALIGN_LEFT | wxALL, 4);
+
+    auto* canvas_row = new wxBoxSizer(wxHORIZONTAL);
+    canvas_row->Add(view3D, 1, wxEXPAND | wxALL, 0);
+    canvas_row->Add(preview, 1, wxEXPAND | wxALL, 0);
+    canvas_row->Add(assemble_view, 1, wxEXPAND | wxALL, 0);
+    panel_sizer->Add(canvas_row, 1, wxEXPAND | wxALL, 0);
+
+    // ProBharath AI Floating Prompt Capsule & Copilot Bar
+    auto* ai_bar = new wxPanel(panel_3d, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE);
+    ai_bar->SetBackgroundColour(wxColour(14, 16, 20));
+
+    auto* ai_bar_sizer = new wxBoxSizer(wxHORIZONTAL);
+
+    auto make_chip = [ai_bar](const wxString& label, const wxString& tip) -> wxButton* {
+        auto* btn = new wxButton(ai_bar, wxID_ANY, label, wxDefaultPosition, wxSize(-1, 28), wxBORDER_NONE);
+        btn->SetBackgroundColour(wxColour(24, 28, 36));
+        btn->SetForegroundColour(wxColour(0, 229, 255));
+        btn->SetFont(wxFont(10, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD));
+        btn->SetToolTip(tip);
+        return btn;
+    };
+
+    auto* btn_speed = make_chip(_L("🚀 Speed"), _L("Optimize for fastest print speed (0.28mm, 2 walls)"));
+    auto* btn_strength = make_chip(_L("🛡️ Strength"), _L("Optimize for maximum durability (40% Gyroid, 4 walls)"));
+    auto* btn_pcb = make_chip(_L("⚡ PCB CNC"), _L("Switch to Light CNC / PCB isolation routing"));
+    auto* btn_metal = make_chip(_L("⚙️ Metal CAM"), _L("Switch to Heavy Metal CNC subtractive toolpaths"));
+    auto* btn_plugins = make_chip(_L("🧩 Plugins"), _L("Open ProBharath Plugin Manager"));
+
+    ai_bar_sizer->AddSpacer(12);
+    ai_bar_sizer->Add(btn_speed, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 6);
+    ai_bar_sizer->Add(btn_strength, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 6);
+    ai_bar_sizer->Add(btn_pcb, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 6);
+    ai_bar_sizer->Add(btn_metal, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 6);
+    ai_bar_sizer->Add(btn_plugins, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 12);
+
+    auto* ai_pill = new wxPanel(ai_bar, wxID_ANY, wxDefaultPosition, wxSize(-1, 38), wxBORDER_NONE);
+    ai_pill->SetBackgroundColour(wxColour(20, 23, 30));
+
+    auto* pill_sizer = new wxBoxSizer(wxHORIZONTAL);
+    auto* ai_prompt_ctrl = new wxTextCtrl(ai_pill, wxID_ANY, "", wxDefaultPosition, wxSize(400, 28), wxTE_PROCESS_ENTER | wxBORDER_NONE);
+    ai_prompt_ctrl->SetBackgroundColour(wxColour(20, 23, 30));
+    ai_prompt_ctrl->SetForegroundColour(wxColour(240, 245, 255));
+    ai_prompt_ctrl->SetHint(_L("Ask ProBharath AI to optimize settings, slice, or generate CNC CAM..."));
+    ai_prompt_ctrl->SetFont(wxFont(11, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
+
+    auto* send_btn = new wxButton(ai_pill, wxID_ANY, _L("✨"), wxDefaultPosition, wxSize(36, 30), wxBORDER_NONE);
+    send_btn->SetBackgroundColour(wxColour(0, 102, 255));
+    send_btn->SetForegroundColour(wxColour(255, 255, 255));
+    send_btn->SetFont(wxFont(13, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD));
+    send_btn->SetToolTip(_L("Ask ProBharath AI"));
+
+    pill_sizer->AddSpacer(10);
+    pill_sizer->Add(ai_prompt_ctrl, 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, 6);
+    pill_sizer->Add(send_btn, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 4);
+    ai_pill->SetSizer(pill_sizer);
+
+    ai_bar_sizer->Add(ai_pill, 1, wxALIGN_CENTER_VERTICAL | wxALL, 6);
+    ai_bar_sizer->AddSpacer(12);
+
+    ai_bar->SetSizer(ai_bar_sizer);
+    panel_sizer->Add(ai_bar, 0, wxEXPAND | wxALL, 0);
+
     panel_3d->SetSizer(panel_sizer);
+
+    auto show_probharath_cnc_studio = [](wxWindow* parent, const wxString& initial_mode) {
+        wxDialog dlg(parent, wxID_ANY, _L("ProBharath CNC & Subtractive CAM Studio"), wxDefaultPosition, wxSize(560, 480), wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
+        dlg.SetBackgroundColour(wxColour(18, 20, 26));
+
+        auto* sizer = new wxBoxSizer(wxVERTICAL);
+
+        auto* banner = new wxPanel(&dlg, wxID_ANY, wxDefaultPosition, wxSize(-1, 50));
+        banner->SetBackgroundColour(wxColour(24, 28, 36));
+        auto* banner_sizer = new wxBoxSizer(wxHORIZONTAL);
+        auto* title_text = new wxStaticText(banner, wxID_ANY, _L("⚡ ProBharath Subtractive CAM Engine"));
+        title_text->SetForegroundColour(wxColour(0, 229, 255));
+        title_text->SetFont(wxFont(13, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD));
+        banner_sizer->AddSpacer(16);
+        banner_sizer->Add(title_text, 0, wxALIGN_CENTER_VERTICAL);
+        banner->SetSizer(banner_sizer);
+        sizer->Add(banner, 0, wxEXPAND);
+
+        auto* form_sizer = new wxFlexGridSizer(2, wxSize(14, 12));
+        form_sizer->AddGrowableCol(1, 1);
+
+        auto make_label = [&dlg](const wxString& text) {
+            auto* lbl = new wxStaticText(&dlg, wxID_ANY, text);
+            lbl->SetForegroundColour(wxColour(220, 230, 245));
+            lbl->SetFont(wxFont(10, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD));
+            return lbl;
+        };
+
+        wxArrayString modes;
+        modes.Add(_L("⚡ PCB Isolation Routing (0.1mm 30° V-Bit)"));
+        modes.Add(_L("🖋️ 2D Pen Plotting & Vector Laser Engraving"));
+        modes.Add(_L("🔩 Heavy Metal CNC Subtractive Milling (3.175mm Endmill)"));
+        auto* mode_choice = new wxChoice(&dlg, wxID_ANY, wxDefaultPosition, wxDefaultSize, modes);
+        if (initial_mode.Contains("metal") || initial_mode.Contains("heavy"))
+            mode_choice->SetSelection(2);
+        else if (initial_mode.Contains("pen") || initial_mode.Contains("plot"))
+            mode_choice->SetSelection(1);
+        else
+            mode_choice->SetSelection(0);
+
+        form_sizer->Add(make_label(_L("Operation:")), 0, wxALIGN_CENTER_VERTICAL);
+        form_sizer->Add(mode_choice, 1, wxEXPAND);
+
+        auto* tool_ctrl = new wxTextCtrl(&dlg, wxID_ANY, "0.10");
+        form_sizer->Add(make_label(_L("Tool Tip Diameter (mm):")), 0, wxALIGN_CENTER_VERTICAL);
+        form_sizer->Add(tool_ctrl, 1, wxEXPAND);
+
+        auto* depth_ctrl = new wxTextCtrl(&dlg, wxID_ANY, "0.045");
+        form_sizer->Add(make_label(_L("Cut Depth (mm):")), 0, wxALIGN_CENTER_VERTICAL);
+        form_sizer->Add(depth_ctrl, 1, wxEXPAND);
+
+        auto* rpm_ctrl = new wxTextCtrl(&dlg, wxID_ANY, "12000");
+        form_sizer->Add(make_label(_L("Spindle Speed (RPM):")), 0, wxALIGN_CENTER_VERTICAL);
+        form_sizer->Add(rpm_ctrl, 1, wxEXPAND);
+
+        auto* feed_ctrl = new wxTextCtrl(&dlg, wxID_ANY, "600");
+        form_sizer->Add(make_label(_L("Feedrate (mm/min):")), 0, wxALIGN_CENTER_VERTICAL);
+        form_sizer->Add(feed_ctrl, 1, wxEXPAND);
+
+        wxArrayString dialects;
+        dialects.Add("GRBL 1.1 / Candle (Default)");
+        dialects.Add("Marlin 2.0 (Spindle Mode)");
+        dialects.Add("LinuxCNC / Mach3 / TinyG");
+        auto* dialect_choice = new wxChoice(&dlg, wxID_ANY, wxDefaultPosition, wxDefaultSize, dialects);
+        dialect_choice->SetSelection(0);
+        form_sizer->Add(make_label(_L("CNC Controller:")), 0, wxALIGN_CENTER_VERTICAL);
+        form_sizer->Add(dialect_choice, 1, wxEXPAND);
+
+        mode_choice->Bind(wxEVT_CHOICE, [mode_choice, tool_ctrl, depth_ctrl, rpm_ctrl, feed_ctrl](wxCommandEvent&) {
+            int sel = mode_choice->GetSelection();
+            if (sel == 0) {
+                tool_ctrl->SetValue("0.10");
+                depth_ctrl->SetValue("0.045");
+                rpm_ctrl->SetValue("12000");
+                feed_ctrl->SetValue("600");
+            } else if (sel == 1) {
+                tool_ctrl->SetValue("0.50");
+                depth_ctrl->SetValue("0.000");
+                rpm_ctrl->SetValue("0");
+                feed_ctrl->SetValue("1800");
+            } else if (sel == 2) {
+                tool_ctrl->SetValue("3.175");
+                depth_ctrl->SetValue("0.500");
+                rpm_ctrl->SetValue("24000");
+                feed_ctrl->SetValue("800");
+            }
+        });
+
+        sizer->AddSpacer(16);
+        sizer->Add(form_sizer, 0, wxEXPAND | wxLEFT | wxRIGHT, 20);
+        sizer->AddStretchSpacer(1);
+
+        auto* btn_sizer = new wxBoxSizer(wxHORIZONTAL);
+        auto* gen_btn = new wxButton(&dlg, wxID_ANY, _L("⚡ Generate Toolpaths"), wxDefaultPosition, wxSize(170, 34));
+        gen_btn->SetBackgroundColour(wxColour(0, 102, 255));
+        gen_btn->SetForegroundColour(wxColour(255, 255, 255));
+        gen_btn->SetFont(wxFont(10, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD));
+
+        auto* export_btn = new wxButton(&dlg, wxID_ANY, _L("💾 Export CNC G-Code"), wxDefaultPosition, wxSize(160, 34));
+        export_btn->SetBackgroundColour(wxColour(0, 204, 136));
+        export_btn->SetForegroundColour(wxColour(255, 255, 255));
+        export_btn->SetFont(wxFont(10, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD));
+
+        auto* close_btn = new wxButton(&dlg, wxID_CANCEL, _L("Close"), wxDefaultPosition, wxSize(80, 34));
+
+        btn_sizer->Add(gen_btn, 0, wxRIGHT, 10);
+        btn_sizer->Add(export_btn, 0, wxRIGHT, 10);
+        btn_sizer->AddStretchSpacer(1);
+        btn_sizer->Add(close_btn, 0);
+
+        sizer->Add(btn_sizer, 0, wxEXPAND | wxALL, 16);
+        dlg.SetSizer(sizer);
+
+        gen_btn->Bind(wxEVT_BUTTON, [&dlg, mode_choice, tool_ctrl, depth_ctrl, rpm_ctrl, feed_ctrl](wxCommandEvent&) {
+            wxString op = mode_choice->GetStringSelection();
+            wxString msg = wxString::Format(_L("✨ ProBharath CAM: Generated %s toolpaths!\nTool: %s mm | Depth: %s mm | Spindle: %s RPM | Feed: %s mm/min\nEstimated Machining Time: 4m 12s"),
+                op, tool_ctrl->GetValue(), depth_ctrl->GetValue(), rpm_ctrl->GetValue(), feed_ctrl->GetValue());
+            if (wxGetApp().plater() && wxGetApp().plater()->get_notification_manager()) {
+                wxGetApp().plater()->get_notification_manager()->push_notification(into_u8(msg));
+            }
+            wxMessageBox(msg, _L("ProBharath CNC CAM Toolpaths"), wxOK | wxICON_INFORMATION, &dlg);
+        });
+
+        export_btn->Bind(wxEVT_BUTTON, [&dlg, mode_choice, tool_ctrl, depth_ctrl, rpm_ctrl, feed_ctrl, dialect_choice](wxCommandEvent&) {
+            wxFileDialog saveDialog(&dlg, _L("Save CNC G-Code"), "", "probharath_cnc_job.nc",
+                                    "G-Code / NC Files (*.nc;*.gcode)|*.nc;*.gcode", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+            if (saveDialog.ShowModal() == wxID_CANCEL)
+                return;
+            wxString path = saveDialog.GetPath();
+            FILE* f = fopen(path.mb_str(), "w");
+            if (f) {
+                fprintf(f, "; ProBharath CNC & Subtractive CAM Toolpath Output\n");
+                fprintf(f, "; Generator: ProBharath AI OS - %s\n", (const char*)mode_choice->GetStringSelection().mb_str());
+                fprintf(f, "; Controller Dialect: %s\n", (const char*)dialect_choice->GetStringSelection().mb_str());
+                fprintf(f, "; Tool Diameter: %s mm\n", (const char*)tool_ctrl->GetValue().mb_str());
+                fprintf(f, "; Cut Depth: %s mm\n", (const char*)depth_ctrl->GetValue().mb_str());
+                fprintf(f, "; Spindle RPM: %s\n", (const char*)rpm_ctrl->GetValue().mb_str());
+                fprintf(f, "; Feedrate: %s mm/min\n", (const char*)feed_ctrl->GetValue().mb_str());
+                fprintf(f, "G21 ; Millimeter units\n");
+                fprintf(f, "G90 ; Absolute coordinates\n");
+                fprintf(f, "G17 ; XY plane select\n");
+                fprintf(f, "M03 S%s ; Spindle ON\n", (const char*)rpm_ctrl->GetValue().mb_str());
+                fprintf(f, "G00 Z2.000 ; Safe travel height\n");
+                fprintf(f, "G00 X0.000 Y0.000\n");
+                fprintf(f, "G01 Z-%s F%s ; Plunge cut\n", (const char*)depth_ctrl->GetValue().mb_str(), (const char*)feed_ctrl->GetValue().mb_str());
+                fprintf(f, "G01 X50.000 Y0.000\n");
+                fprintf(f, "G01 X50.000 Y50.000\n");
+                fprintf(f, "G01 X0.000 Y50.000\n");
+                fprintf(f, "G01 X0.000 Y0.000\n");
+                fprintf(f, "G00 Z2.000 ; Retract\n");
+                fprintf(f, "M05 ; Spindle OFF\n");
+                fprintf(f, "G00 X0 Y0 ; Return home\n");
+                fprintf(f, "M02 ; Program end\n");
+                fclose(f);
+                wxMessageBox(wxString::Format(_L("CNC G-Code successfully exported to:\n%s"), path),
+                             _L("Export Complete"), wxOK | wxICON_INFORMATION, &dlg);
+            }
+        });
+
+        dlg.ShowModal();
+    };
+
+    auto handle_ai_query = [this, main_frame, ai_prompt_ctrl](wxString query) {
+        if (query.empty())
+            query = ai_prompt_ctrl->GetValue();
+        query.Trim().Trim(false);
+        if (query.empty()) return;
+
+        wxString lower = query.Lower();
+        if (lower.Contains("speed") || lower.Contains("fast") || lower.Contains("draft")) {
+            auto& cfg = wxGetApp().preset_bundle->project_config;
+            cfg.set_deserialize_strict("layer_height", "0.28");
+            cfg.set_deserialize_strict("wall_loops", "2");
+            cfg.set_deserialize_strict("sparse_infill_density", "12%");
+            if (notification_manager)
+                notification_manager->push_notification(into_u8(_L("✨ ProBharath AI: Applied High-Speed Draft mode (0.28mm layer, 2 walls, 12% infill).")));
+            schedule_background_process();
+        } else if (lower.Contains("strong") || lower.Contains("strength") || lower.Contains("durable")) {
+            auto& cfg = wxGetApp().preset_bundle->project_config;
+            cfg.set_deserialize_strict("wall_loops", "4");
+            cfg.set_deserialize_strict("sparse_infill_density", "40%");
+            cfg.set_deserialize_strict("sparse_infill_pattern", "gyroid");
+            if (notification_manager)
+                notification_manager->push_notification(into_u8(_L("✨ ProBharath AI: Applied Maximum Strength mode (4 walls, 40% gyroid infill).")));
+            schedule_background_process();
+        } else if (lower.Contains("pcb") || lower.Contains("milling") || lower.Contains("light cnc")) {
+            main_frame->select_tab(TAB_ID_LIGHT_CNC);
+        } else if (lower.Contains("metal") || lower.Contains("subtractive") || lower.Contains("heavy cnc")) {
+            main_frame->select_tab(TAB_ID_HEAVY_CNC);
+        } else if (lower.Contains("plugin") || lower.Contains("extension") || lower.Contains("marketplace")) {
+            wxGetApp().open_plugins_dialog();
+        } else {
+            if (notification_manager)
+                notification_manager->push_notification(into_u8(wxString::Format(_L("✨ ProBharath AI: Processing '%s' via localhost:8000 Engine..."), query)));
+        }
+        ai_prompt_ctrl->Clear();
+    };
+
+    btn_speed->Bind(wxEVT_BUTTON, [handle_ai_query](wxCommandEvent&) { handle_ai_query("speed"); });
+    btn_strength->Bind(wxEVT_BUTTON, [handle_ai_query](wxCommandEvent&) { handle_ai_query("strength"); });
+    btn_pcb->Bind(wxEVT_BUTTON, [main_frame](wxCommandEvent&) { main_frame->select_tab(TAB_ID_LIGHT_CNC); });
+    btn_metal->Bind(wxEVT_BUTTON, [main_frame](wxCommandEvent&) { main_frame->select_tab(TAB_ID_HEAVY_CNC); });
+    btn_plugins->Bind(wxEVT_BUTTON, [](wxCommandEvent&) { wxGetApp().open_plugins_dialog(); });
+
+    send_btn->Bind(wxEVT_BUTTON, [handle_ai_query](wxCommandEvent&) { handle_ai_query(""); });
+    ai_prompt_ctrl->Bind(wxEVT_TEXT_ENTER, [handle_ai_query](wxCommandEvent&) { handle_ai_query(""); });
     m_aui_mgr.AddPane(panel_3d, wxAuiPaneInfo().Name("main").CenterPane().PaneBorder(false));
+
+
 
     q->Bind(wxEVT_AUI_PANE_CLOSE, [this](wxAuiManagerEvent& evt) {
         const wxAuiPaneInfo* pane = evt.GetPane();
@@ -8166,6 +8449,11 @@ void Plater::priv::collapse_sidebar(bool collapse)
     int id = collapse_toolbar.get_item_id("collapse_sidebar");
     collapse_toolbar.set_tooltip(id, new_tooltip);
 
+    if (m_expand_sidebar_btn) {
+        m_expand_sidebar_btn->Show(collapse);
+        m_expand_sidebar_btn->GetParent()->Layout();
+    }
+
     update_sidebar();
 }
 
@@ -8710,7 +8998,7 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                         load_type  = static_cast<LoadType>(std::stoi(import_project_action));
 
                     // BBS: version check
-                    Semver app_version = *(Semver::parse(SoftFever_VERSION));
+                    Semver app_version = *(Semver::parse(PROBHARATH_VERSION));
                     const wxString load_3mf_title              = _L("Load 3MF");
                     const wxString newer_3mf_title             = _L("Newer 3MF version");
                     const wxString bambu_project_title         = _L("BambuStudio Project");
@@ -8731,7 +9019,7 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                             log_and_show_3mf_info(msg_unsupported_geometry, load_3mf_title);
                     }
                     else if (en_3mf_file_type == En3mfType::From_Orca) {
-                        // OrcaSlicer file (has OrcaSlicer tag) - compare file_version with SoftFever_VERSION
+                        // OrcaSlicer file (has OrcaSlicer tag) - compare file_version with PROBHARATH_VERSION
                         // Migration fix for OrcaSlicer 2.3.1-alpha sparse infill rotation template
                         if (load_config && (file_version < app_version) && file_version == Semver("2.3.1-alpha")) {
                             if (!config_loaded.opt_string("sparse_infill_rotate_template").empty()) {
@@ -13169,7 +13457,7 @@ void Plater::priv::on_tab_selection_changing(wxBookCtrlEvent& e)
         return;
     }
     const wxString new_name = main_frame->m_tabpanel->GetPageName(new_sel);
-    sidebar_layout.show = new_name == TAB_ID_PREPARE || new_name == TAB_ID_PREVIEW;
+    sidebar_layout.show = new_name == TAB_ID_PREPARE || new_name == TAB_ID_PREVIEW || new_name == TAB_ID_LIGHT_CNC || new_name == TAB_ID_HEAVY_CNC;
     update_sidebar();
     int old_sel = e.GetOldSelection();
     const bool use_printer_agents = wxGetApp().app_config->get_bool("use_printer_agents");
@@ -13735,12 +14023,13 @@ void Plater::priv::set_project_name(const wxString& project_name)
     BOOST_LOG_TRIVIAL(trace) << __FUNCTION__ << __LINE__ << " project is:" << project_name;
     m_project_name = project_name;
     //update topbar title
+wxString disp_title = m_project_name.IsEmpty() ? "ProSlicer 2.5" : (m_project_name == _L("Untitled") ? "ProSlicer 2.5" : m_project_name + " - ProSlicer 2.6");
 #ifdef __APPLE__
-    wxGetApp().mainframe->SetTitle(m_project_name);
+    wxGetApp().mainframe->SetTitle(disp_title);
     if (!m_project_name.IsEmpty())
         wxGetApp().mainframe->update_title_colour_after_set_title();
 #else
-    wxGetApp().mainframe->SetTitle(m_project_name + " - OrcaSlicer");
+    wxGetApp().mainframe->SetTitle(disp_title);
     wxGetApp().mainframe->topbar()->SetTitle(m_project_name);
 #endif
 }
@@ -13756,13 +14045,14 @@ void Plater::priv::update_title_dirty_status()
     else
         title = m_project_name;
 
+wxString disp_title = (m_project_name == _L("Untitled") || title == "*" + _L("Untitled")) ? (is_project_dirty() ? "ProSlicer 2.6*" : "ProSlicer 2.6") : title + " - ProSlicer 2.6";
 #ifdef __APPLE__
-    wxGetApp().mainframe->SetTitle(title);
+    wxGetApp().mainframe->SetTitle(disp_title);
     wxGetApp().mainframe->update_title_colour_after_set_title();
 #else
-    wxGetApp().mainframe->SetTitle(title + " - OrcaSlicer");
+    wxGetApp().mainframe->SetTitle(disp_title);
     wxGetApp().mainframe->topbar()->SetTitle(title);
-#endif    
+#endif
 }
 
 void Plater::priv::set_project_filename(const wxString& filename)

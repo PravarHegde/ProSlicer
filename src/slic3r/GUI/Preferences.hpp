@@ -30,7 +30,7 @@ namespace Slic3r { namespace GUI {
 #define DESIGN_LEFT_MARGIN 25
 
 // The tabs other dialogs open Preferences on.
-enum class PreferencesTab { General, Control, Graphics, Online };
+enum class PreferencesTab { General, Control, Graphics, Online, ProBharathAI };
 
 class PreferencesDialog : public DPIDialog
 {

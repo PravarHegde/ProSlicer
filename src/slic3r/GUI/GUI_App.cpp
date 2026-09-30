@@ -2605,7 +2605,7 @@ void GUI_App::init_app_config()
     set_log_path_and_level(log_filename, 3);
 #endif
 
-    BOOST_LOG_TRIVIAL(info) << boost::format("gui mode, Current OrcaSlicer Version %1% build %2%") % SoftFever_VERSION % build_commit_label;
+    BOOST_LOG_TRIVIAL(info) << boost::format("gui mode, Current OrcaSlicer Version %1% build %2%") % PROBHARATH_VERSION % build_commit_label;
 
     //BBS: remove GCodeViewer as seperate APP logic
 	if (!app_config)
@@ -3053,7 +3053,7 @@ bool GUI_App::on_init_inner()
             RichMessageDialog
                 dlg(nullptr,
                     wxString::Format(_L("%s\nDo you want to continue?"), msg),
-                    "OrcaSlicer", wxICON_QUESTION | wxYES_NO);
+                    SLIC3R_APP_FULL_NAME, wxICON_QUESTION | wxYES_NO);
             dlg.ShowCheckBox(_L("Remember my choice"));
             if (dlg.ShowModal() != wxID_YES) return false;
 
@@ -3072,9 +3072,10 @@ bool GUI_App::on_init_inner()
 #ifdef _MSW_DARK_MODE
 
 #ifndef __WINDOWS__
-    wxSystemAppearance app = wxSystemSettings::GetAppearance();
-    GUI::wxGetApp().app_config->set("dark_color_mode", app.IsDark() ? "1" : "0");
-    GUI::wxGetApp().app_config->save();
+    if (!GUI::wxGetApp().app_config->has("dark_color_mode")) {
+        GUI::wxGetApp().app_config->set("dark_color_mode", "1");
+        GUI::wxGetApp().app_config->save();
+    }
 #endif // __APPLE__
 
 
@@ -3132,8 +3133,8 @@ bool GUI_App::on_init_inner()
     // }
 
     //Orca: write OrcaSlicer version
-    if(app_config->get("version") != SoftFever_VERSION) {
-        app_config->set("version", SoftFever_VERSION);
+    if(app_config->get("version") != PROBHARATH_VERSION) {
+        app_config->set("version", PROBHARATH_VERSION);
     }
 
     // Orca: use wxWeakRef to provent wild pointer.
@@ -4160,21 +4161,15 @@ void GUI_App::select_machine(const std::string& agent_id)
 bool GUI_App::dark_mode()
 {
 #ifdef SUPPORT_DARK_MODE
+    if (wxGetApp().app_config) {
+        const auto &val = wxGetApp().app_config->get("dark_color_mode");
+        if (val == "0") return false;
+        if (val == "1") return true;
+        return true;
+    }
 #if __APPLE__
-    // The check for dark mode returns false positive on 10.12 and 10.13,
-    // which allowed setting dark menu bar and dock area, which is
-    // is detected as dark mode. We must run on at least 10.14 where the
-    // proper dark mode was first introduced.
     return wxPlatformInfo::Get().CheckOSVersion(10, 14) && mac_dark_mode();
 #else
-    // When the user has explicitly chosen a mode, honour it directly.
-    // Falling through to check_dark_mode() for an explicit "0" would query
-    // wxSystemSettings::GetAppearance().IsDark(), which is contaminated by
-    // wxWidgets 3.3's MSWEnableDarkMode(DarkMode_Auto) and can return true
-    // even though the user asked for light mode.
-    const auto &val = wxGetApp().app_config->get("dark_color_mode");
-    if (val == "1") return true;
-    if (val == "0") return false;
     return check_dark_mode();
 #endif
 #else
@@ -5161,10 +5156,10 @@ std::string GUI_App::handle_web_request(std::string cmd)
             if (app_config->get_stealth_mode() && stealth_blocked_login_commands.count(command_str)) {
                 CallAfter([this, command_str] {
                     MessageDialog dlg(mainframe,
-                        _L("You are currently in Stealth Mode. To log into the Cloud, you need to disable Stealth Mode first."),
-                        _L("Stealth Mode"),
+                        _L("You are currently in Offline Mode. To log into the Cloud, you need to disable Offline Mode first."),
+                        _L("Offline Mode"),
                         wxOK | wxCANCEL | wxCENTRE);
-                    dlg.SetButtonLabel(wxID_OK, _L("Quit Stealth Mode"));
+                    dlg.SetButtonLabel(wxID_OK, _L("Quit Offline Mode"));
                     if (dlg.ShowModal() == wxID_OK) {
                         app_config->set_bool("stealth_mode", false);
                         app_config->save();
@@ -5913,7 +5908,7 @@ std::string detect_updater_os_info()
 
 std::string detect_updater_version()
 {
-    return SoftFever_VERSION;
+    return PROBHARATH_VERSION;
 }
 
 std::string detect_updater_iid(AppConfig* config)
@@ -6142,7 +6137,7 @@ void GUI_App::check_new_version_sf(bool show_tips, int by_user)
             boost::property_tree::read_json(json_stream, root);
 
             std::regex matcher("[0-9]+\\.[0-9]+(\\.[0-9]+)*(-[A-Za-z0-9]+)?(\\+[A-Za-z0-9]+)?");
-            Semver    current_version = get_version(SoftFever_VERSION, matcher);
+            Semver    current_version = get_version(PROBHARATH_VERSION, matcher);
             Semver    best_pre(0, 0, 0);
             Semver    best_release(0, 0, 0);
             bool      best_pre_valid = false;
@@ -6503,7 +6498,7 @@ std::string GUI_App::format_display_version()
 {
     if (!version_display.empty()) return version_display;
 
-    version_display = SoftFever_VERSION;
+    version_display = PROBHARATH_VERSION;
     return version_display;
 }
 

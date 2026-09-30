@@ -1,6 +1,7 @@
 html
 {
-	background-color: #fff;
+	background-color: #12151e;
+	color: #dce6f5;
 }
 
 body
@@ -10,9 +11,11 @@ body
 	overflow: auto;
 }
 
-#SlicerIcon
+#SlicerIcon img
 {
-
+	max-width: 200px;
+	max-height: 200px;
+	object-fit: contain;
 }
 
 #Title
