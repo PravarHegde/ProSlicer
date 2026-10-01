@@ -252,6 +252,8 @@ body {
   min-width: 250px;
   max-width: 50vw;
   resize: horizontal;
+  min-height: 0;
+  height: 100%;
 }
 
 .ctrl-section {
@@ -424,6 +426,8 @@ body {
   position: relative;
   display: flex;
   flex-direction: column;
+  min-height: 0;
+  height: 100%;
 }
 
 .tab-content {
@@ -587,6 +591,8 @@ canvas {
   gap: 12px;
   scrollbar-width: thin;
   scrollbar-color: var(--border2) transparent;
+  min-height: 0;
+  height: 100%;
 }
 .info-header h3 {
   font-size: 11px;
@@ -702,8 +708,48 @@ canvas {
   .app-main { grid-template-columns: auto 1fr; }
   .info-panel { display:none; }
 }
-@media (max-width: 720px) {
-  .app-main { grid-template-columns: 1fr; }
-  .sidebar { display:none; }
-  .header-nav { display:none; }
+@media (max-width: 768px) {
+  .header { flex-wrap: wrap; height: auto; padding: 10px; gap: 10px; }
+  .header-nav { width: 100%; justify-content: center; }
+  .header-actions { width: 100%; justify-content: center; }
+  
+  .app-main { 
+    display: flex; 
+    flex-direction: column; 
+    height: auto; 
+    overflow-y: auto; 
+  }
+  
+  .sidebar {
+    width: 100% !important;
+    max-width: 100% !important;
+    resize: none;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    overflow: visible;
+  }
+  
+  .viewport {
+    height: auto;
+    min-height: 80vh;
+    overflow: visible;
+  }
+  
+  .info-panel {
+    display: flex;
+    width: 100%;
+    border-left: none;
+    border-top: 1px solid var(--border);
+    height: auto;
+    overflow: visible;
+  }
+  
+  .tab-content {
+    overflow: visible;
+  }
+  
+  .export-grid {
+    grid-template-columns: 1fr;
+  }
 }
