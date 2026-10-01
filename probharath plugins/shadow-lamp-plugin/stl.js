@@ -1,6 +1,6 @@
 // stl.js
 
-function generateBinarySTL(grid, wPx, hPx, wMm, hMm, thickness) {
+function generateBinarySTL(grid, wPx, hPx, wMm, hMm, thickness, transform = null, flipWinding = false) {
   const dx = wMm / wPx;
   const dy = hMm / hPx;
   const th = thickness;
@@ -8,10 +8,24 @@ function generateBinarySTL(grid, wPx, hPx, wMm, hMm, thickness) {
   const triangles = [];
   
   function addQuad(p1, p2, p3, p4, n) {
-    // Triangle 1
-    triangles.push({n:n, v1:p1, v2:p2, v3:p3});
-    // Triangle 2
-    triangles.push({n:n, v1:p1, v2:p3, v3:p4});
+    if (transform) {
+      p1 = transform(p1);
+      p2 = transform(p2);
+      p3 = transform(p3);
+      p4 = transform(p4);
+      // Transform normal (simplified: assume orthogonal transformations without scaling)
+      const origin = transform([0,0,0]);
+      const nt = transform(n);
+      n = [nt[0]-origin[0], nt[1]-origin[1], nt[2]-origin[2]];
+    }
+    
+    if (flipWinding) {
+      triangles.push({n:n, v1:p1, v2:p4, v3:p3});
+      triangles.push({n:n, v1:p1, v2:p3, v3:p2});
+    } else {
+      triangles.push({n:n, v1:p1, v2:p2, v3:p3});
+      triangles.push({n:n, v1:p1, v2:p3, v3:p4});
+    }
   }
   
   function getGrid(u, v) {
@@ -114,7 +128,7 @@ function generateBinarySTL(grid, wPx, hPx, wMm, hMm, thickness) {
     view.setUint16(offset, 0, true); offset += 2;
   }
   
-  return buffer;
+  return { triangles: triangles, buffer: buffer };
 }
 
 function saveSTL(buffer, filename) {
@@ -138,8 +152,8 @@ function downloadSTL(panelType) {
   const panel = State.panels[panelType];
   const thickness = parseFloat(document.getElementById('panel-t').value);
   
-  const buffer = generateBinarySTL(panel.grid, panel.wPx, panel.hPx, panel.wMm, panel.hMm, thickness);
-  saveSTL(buffer, `shadow_lamp_${panelType}.stl`);
+  const result = generateBinarySTL(panel.grid, panel.wPx, panel.hPx, panel.wMm, panel.hMm, thickness);
+  saveSTL(result.buffer, `shadow_lamp_${panelType}.stl`);
 }
 
 function exportAllSTL() {
@@ -153,8 +167,8 @@ function exportAllSTL() {
   
   ['top', 'bottom', 'left', 'right'].forEach(panelType => {
     const panel = State.panels[panelType];
-    const buffer = generateBinarySTL(panel.grid, panel.wPx, panel.hPx, panel.wMm, panel.hMm, thickness);
-    zip.file(`shadow_lamp_${panelType}.stl`, buffer);
+    const result = generateBinarySTL(panel.grid, panel.wPx, panel.hPx, panel.wMm, panel.hMm, thickness);
+    zip.file(`shadow_lamp_${panelType}.stl`, result.buffer);
   });
   
   zip.generateAsync({type:"blob"}).then(function(content) {
@@ -167,4 +181,67 @@ function exportAllSTL() {
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
   });
+}
+
+function exportAssembledBox() {
+  if (!State.panels.top.grid) {
+    alert("Please load an image first.");
+    return;
+  }
+  const thickness = parseFloat(document.getElementById('panel-t').value);
+  const params = getParams();
+  
+  const transforms = {
+    'top': {
+      fn: p => [p[0], params.boxH - thickness + p[2], p[1]],
+      flip: true
+    },
+    'bottom': {
+      fn: p => [p[0], thickness - p[2], p[1]],
+      flip: false
+    },
+    'left': {
+      fn: p => [thickness - p[2], p[1], p[0]],
+      flip: false
+    },
+    'right': {
+      fn: p => [params.boxW - thickness + p[2], p[1], p[0]],
+      flip: true
+    }
+  };
+  
+  let allTriangles = [];
+  ['top', 'bottom', 'left', 'right'].forEach(panelType => {
+    const panel = State.panels[panelType];
+    const t = transforms[panelType];
+    const result = generateBinarySTL(panel.grid, panel.wPx, panel.hPx, panel.wMm, panel.hMm, thickness, t.fn, t.flip);
+    allTriangles = allTriangles.concat(result.triangles);
+  });
+  
+  // Create binary STL from allTriangles
+  const buffer = new ArrayBuffer(80 + 4 + allTriangles.length * 50);
+  const view = new DataView(buffer);
+  
+  // Header
+  for (let i = 0; i < 80; i++) view.setUint8(i, 0);
+  view.setUint32(80, allTriangles.length, true);
+  
+  let offset = 84;
+  for (const tri of allTriangles) {
+    view.setFloat32(offset, tri.n[0], true); offset += 4;
+    view.setFloat32(offset, tri.n[1], true); offset += 4;
+    view.setFloat32(offset, tri.n[2], true); offset += 4;
+    view.setFloat32(offset, tri.v1[0], true); offset += 4;
+    view.setFloat32(offset, tri.v1[1], true); offset += 4;
+    view.setFloat32(offset, tri.v1[2], true); offset += 4;
+    view.setFloat32(offset, tri.v2[0], true); offset += 4;
+    view.setFloat32(offset, tri.v2[1], true); offset += 4;
+    view.setFloat32(offset, tri.v2[2], true); offset += 4;
+    view.setFloat32(offset, tri.v3[0], true); offset += 4;
+    view.setFloat32(offset, tri.v3[1], true); offset += 4;
+    view.setFloat32(offset, tri.v3[2], true); offset += 4;
+    view.setUint16(offset, 0, true); offset += 2;
+  }
+  
+  saveSTL(buffer, 'shadow_lamp_assembled.stl');
 }

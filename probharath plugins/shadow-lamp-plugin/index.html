@@ -163,6 +163,7 @@
           <button class="quick-btn" onclick="loadDemoImage('lotus')">🪷 Lotus</button>
           <button class="quick-btn" onclick="loadDemoImage('cityscape')">🏙️ Cityscape</button>
           <button class="quick-btn" onclick="loadDemoImage('wolf')">🐺 Wolf</button>
+          <button class="quick-btn" onclick="loadDemoImage('einstein')">🧠 Einstein</button>
           <button class="quick-btn" onclick="loadDemoImage('star')">★ Star</button>
           <button class="quick-btn" onclick="loadDemoImage('rocket')">🚀 Rocket</button>
         </div>
@@ -215,9 +216,7 @@
             </div>
           </div>
           <div class="preview-controls">
-            <button class="pill-btn active" onclick="setLightOn(true)">💡 Light On</button>
-            <button class="pill-btn" onclick="setLightOn(false)">🌑 Light Off</button>
-            <button class="pill-btn" onclick="animateGlow()">✨ Animate</button>
+            <button class="pill-btn active" id="toggle-light-btn" onclick="toggleLight()">💡 Light is ON</button>
           </div>
         </div>
       </div>
@@ -255,9 +254,14 @@
           </div>
         </div>
         <div class="export-footer">
-          <button class="big-export-btn" onclick="exportAllSTL()">
-            <span>⬇</span> Download All 4 Panels (ZIP)
-          </button>
+          <div style="display: flex; gap: 12px; justify-content: center; width: 100%;">
+            <button class="big-export-btn" onclick="exportAllSTL()">
+              <span>⬇</span> Download All 4 Panels (ZIP)
+            </button>
+            <button class="big-export-btn" style="background: var(--accent2); color: white;" onclick="exportAssembledBox()">
+              <span>📦</span> Download Assembled Box (STL)
+            </button>
+          </div>
           <p class="export-note">STL files are ready for 3D printing. Print each panel flat. Use matte black PLA/PETG for best shadow contrast.</p>
         </div>
       </div>

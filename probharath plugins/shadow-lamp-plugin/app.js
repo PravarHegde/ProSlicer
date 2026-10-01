@@ -86,7 +86,7 @@ function loadDemoImage(key) {
       processSourceImage();
       setStatus("Demo loaded. Ready to export.");
     };
-    img.src = 'img/' + key + '.jpg';
+    img.src = 'img/' + key + '.jpg?v=' + new Date().getTime();
     return;
   }
   
@@ -105,29 +105,28 @@ function loadDemoImage(key) {
 }
 
 let isLightOn = true;
-function setLightOn(on) {
-  isLightOn = on;
-  document.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.pill-btn')[on ? 0 : 1].classList.add('active');
+function toggleLight() {
+  isLightOn = !isLightOn;
+  
+  const btn = document.getElementById('toggle-light-btn');
+  if (btn) {
+    btn.innerHTML = isLightOn ? '💡 Light is ON' : '🌑 Light is OFF';
+    if (isLightOn) btn.classList.add('active');
+    else btn.classList.remove('active');
+  }
   
   const led = document.getElementById('lamp-led');
-  if (on) {
+  if (isLightOn) {
     led.style.boxShadow = '0 0 20px 8px rgba(255,240,200,0.9)';
     led.style.background = '#fff';
+    led.style.animation = 'glow-pulse 1.5s infinite';
   } else {
     led.style.boxShadow = 'none';
     led.style.background = '#333';
+    led.style.animation = 'none';
   }
   
   drawPreviewRoom();
-}
-
-function animateGlow() {
-  const led = document.getElementById('lamp-led');
-  led.style.animation = 'glow-pulse 1.5s infinite';
-  setTimeout(() => {
-    led.style.animation = 'none';
-  }, 3000);
 }
 
 function drawPreviewRoom() {
