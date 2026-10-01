@@ -1,0 +1,12 @@
+<svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg" width="300" height="300">
+  <!-- Elephant Head & Body -->
+  <path d="M28.5 12C28.5 7.5 24.5 4 19 4C14 4 10 7 9 11L9 18L13 23L13 33L18 33L18 23L22 23L22 33L27 33L27 20L28.5 18Z" fill="#1a1a2e" fill-opacity="0.95"/>
+  <!-- Elephant Trunk -->
+  <path d="M9 18H4.5C4.5 24 7 28 12 28C13.5 28 14.5 27 14.5 25.5C14.5 24 13.5 23 12 23C9 23 8 21 8 18H9Z" fill="#1a1a2e"/>
+  <!-- Elephant Tusk -->
+  <path d="M10.5 21L6 26L7.5 26.5L12 21Z" fill="#ffffff"/>
+  <!-- Eye -->
+  <circle cx="13.5" cy="11" r="1.5" fill="#ffffff"/>
+  <!-- Ear -->
+  <path d="M18 9L26 11L25 18L17 15Z" fill="#ffffff" fill-opacity="0.8"/>
+</svg>

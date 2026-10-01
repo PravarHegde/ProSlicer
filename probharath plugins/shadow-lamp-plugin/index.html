@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shadow Projection Lamp Generator | ProSlicer Plugin</title>
+  <meta name="description" content="Generate 3D-printable shadow projection lamp panels from any image. Reverse-project silhouettes onto 4 box panels with precise point-light math. Export STL files instantly." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&family=Orbitron:wght@400;600;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="theme-dark" id="app-body">
+
+  <!-- ═══════════════════════════════════════════════════ HEADER ══ -->
+  <header class="app-header">
+    <div class="header-brand">
+      <div class="brand-icon">
+        <img src="img/goat_logo.png" alt="ProSlicer Logo" style="width: 100%; height: 100%; object-fit: contain; filter: invert(1); mix-blend-mode: screen;" />
+      </div>
+      <div class="brand-text">
+        <span class="brand-name">Shadow Lamp</span>
+        <span class="brand-sub">ProSlicer Plugin</span>
+      </div>
+    </div>
+
+    <nav class="header-nav">
+      <button class="nav-btn active" id="btn-design" onclick="switchTab('design')">Design</button>
+      <button class="nav-btn" id="btn-preview" onclick="switchTab('preview')">Preview</button>
+      <button class="nav-btn" id="btn-export" onclick="switchTab('export')">Export STL</button>
+    </nav>
+
+    <div class="header-actions">
+      <div class="theme-switcher" id="theme-switcher">
+        <button class="theme-dot" data-theme="dark"    title="Dark"       onclick="setTheme('dark')"      style="background:#1a1a2e"></button>
+        <button class="theme-dot" data-theme="light"   title="Light"      onclick="setTheme('light')"     style="background:#f0f4ff"></button>
+        <button class="theme-dot" data-theme="vibrant" title="Vibrant"    onclick="setTheme('vibrant')"   style="background:linear-gradient(135deg,#ff6b6b,#4ecdc4)"></button>
+        <button class="theme-dot" data-theme="protech" title="Pro-Tech"   onclick="setTheme('protech')"   style="background:#001a0a"></button>
+      </div>
+      <button class="export-btn" id="main-export-btn" onclick="exportAllSTL()">
+        <svg viewBox="0 0 20 20" fill="none"><path d="M10 2v10m0 0l-3-3m3 3l3-3M3 15v1a2 2 0 002 2h10a2 2 0 002-2v-1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Export STL
+      </button>
+    </div>
+  </header>
+
+  <!-- ══════════════════════════════════════════════ MAIN LAYOUT ══ -->
+  <main class="app-main">
+
+    <!-- ───────────────────────── LEFT PANEL: CONTROLS ─────────── -->
+    <aside class="sidebar" id="sidebar">
+
+      <!-- IMAGE UPLOAD -->
+      <section class="ctrl-section">
+        <h3 class="ctrl-title">
+          <span class="ctrl-icon">🖼</span> Source Image
+        </h3>
+        <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
+          <div class="upload-inner" id="upload-inner">
+            <div class="upload-icon">⬆</div>
+            <p class="upload-text">Drop SVG, JPG, or PNG here</p>
+            <p class="upload-sub">or click to browse</p>
+          </div>
+        </div>
+        <input type="file" id="file-input" accept=".svg,.jpg,.jpeg,.png" style="display:none" onchange="handleFileUpload(event)"/>
+
+        <div class="inline-row" style="margin-top:10px">
+          <label class="ctrl-label">Threshold</label>
+          <input type="range" id="threshold" min="10" max="245" value="128" class="slider" oninput="updateThreshold(this.value)"/>
+          <span class="slider-val" id="threshold-val">128</span>
+        </div>
+        <div class="inline-row">
+          <label class="ctrl-label">Invert</label>
+          <label class="toggle-switch">
+            <input type="checkbox" id="invert-toggle" onchange="rebuildProjection()"/>
+            <span class="toggle-track"></span>
+          </label>
+        </div>
+      </section>
+
+      <!-- BOX GEOMETRY -->
+      <section class="ctrl-section">
+        <h3 class="ctrl-title">
+          <span class="ctrl-icon">📦</span> Box Geometry (mm)
+        </h3>
+        <div class="slider-group">
+          <div class="inline-row">
+            <label class="ctrl-label" style="min-width: 60px">Width</label>
+            <input type="range" id="box-w-slider" min="40" max="300" value="120" class="slider" oninput="updateDual('box-w', this.value)"/>
+            <input type="number" id="box-w" min="40" max="300" value="120" class="num-input" style="flex:0 0 45px; padding:2px 4px" oninput="updateDual('box-w', this.value)"/>
+            <span class="unit-label">mm</span>
+          </div>
+          <div class="inline-row">
+            <label class="ctrl-label" style="min-width: 60px">Height</label>
+            <input type="range" id="box-h-slider" min="40" max="300" value="120" class="slider" oninput="updateDual('box-h', this.value)"/>
+            <input type="number" id="box-h" min="40" max="300" value="120" class="num-input" style="flex:0 0 45px; padding:2px 4px" oninput="updateDual('box-h', this.value)"/>
+            <span class="unit-label">mm</span>
+          </div>
+          <div class="inline-row">
+            <label class="ctrl-label" style="min-width: 60px">Depth</label>
+            <input type="range" id="box-d-slider" min="30" max="200" value="80" class="slider" oninput="updateDual('box-d', this.value)"/>
+            <input type="number" id="box-d" min="30" max="200" value="80" class="num-input" style="flex:0 0 45px; padding:2px 4px" oninput="updateDual('box-d', this.value)"/>
+            <span class="unit-label">mm</span>
+          </div>
+          <div class="inline-row">
+            <label class="ctrl-label" style="min-width: 60px">Thick</label>
+            <input type="range" id="panel-t-slider" min="1" max="6" step="0.5" value="2.5" class="slider" oninput="updateDual('panel-t', this.value)"/>
+            <input type="number" id="panel-t" min="1" max="6" step="0.5" value="2.5" class="num-input" style="flex:0 0 45px; padding:2px 4px" oninput="updateDual('panel-t', this.value)"/>
+            <span class="unit-label">mm</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- LIGHT SOURCE -->
+      <section class="ctrl-section">
+        <h3 class="ctrl-title">
+          <span class="ctrl-icon">💡</span> Light Source
+        </h3>
+        <div class="slider-group">
+          <div class="inline-row">
+            <label class="ctrl-label">LED offset X</label>
+            <input type="range" id="led-x" min="-50" max="50" value="0" class="slider" oninput="updateParam('led-x','led-x-val',this.value)"/>
+            <span class="slider-val" id="led-x-val">0</span>
+          </div>
+          <div class="inline-row">
+            <label class="ctrl-label">LED offset Y</label>
+            <input type="range" id="led-y" min="-50" max="50" value="0" class="slider" oninput="updateParam('led-y','led-y-val',this.value)"/>
+            <span class="slider-val" id="led-y-val">0</span>
+          </div>
+          <div class="inline-row">
+            <label class="ctrl-label">Wall Distance</label>
+            <input type="range" id="wall-d" min="100" max="800" value="300" class="slider" oninput="updateParam('wall-d','wall-d-val',this.value)"/>
+            <span class="slider-val" id="wall-d-val">300</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- PROJECTION SCALE -->
+      <section class="ctrl-section">
+        <h3 class="ctrl-title">
+          <span class="ctrl-icon">🔭</span> Projection
+        </h3>
+        <div class="slider-group">
+          <div class="inline-row">
+            <label class="ctrl-label">Image Scale</label>
+            <input type="range" id="img-scale" min="0.2" max="3" step="0.05" value="1" class="slider" oninput="updateParam('img-scale','img-scale-val',this.value)"/>
+            <span class="slider-val" id="img-scale-val">1.0</span>
+          </div>
+          <div class="inline-row">
+            <label class="ctrl-label">Bridge Width</label>
+            <input type="range" id="bridge-w" min="0.5" max="4" step="0.25" value="1.5" class="slider" oninput="updateParam('bridge-w','bridge-w-val',this.value)"/>
+            <span class="slider-val" id="bridge-w-val">1.5</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- QUICK ACTIONS -->
+      <section class="ctrl-section">
+        <h3 class="ctrl-title"><span class="ctrl-icon">⚡</span> Quick Load</h3>
+        <div class="quick-actions">
+          <button class="quick-btn" onclick="loadDemoImage('probharath')">🐘 ProBharath</button>
+          <button class="quick-btn" onclick="loadDemoImage('samurai')">⚔️ Samurai</button>
+          <button class="quick-btn" onclick="loadDemoImage('lotus')">🪷 Lotus</button>
+          <button class="quick-btn" onclick="loadDemoImage('cityscape')">🏙️ Cityscape</button>
+          <button class="quick-btn" onclick="loadDemoImage('wolf')">🐺 Wolf</button>
+          <button class="quick-btn" onclick="loadDemoImage('star')">★ Star</button>
+          <button class="quick-btn" onclick="loadDemoImage('rocket')">🚀 Rocket</button>
+        </div>
+      </section>
+
+    </aside>
+
+    <!-- ──────────────────────── CENTER: VIEWPORT ──────────────── -->
+    <div class="viewport" id="viewport">
+
+      <!-- DESIGN TAB -->
+      <div class="tab-content active" id="tab-design">
+        <div class="canvas-wrap">
+          <div class="canvas-label">Original Image</div>
+          <canvas id="canvas-src" width="280" height="280"></canvas>
+        </div>
+        <div class="canvas-wrap">
+          <div class="canvas-label">Processed Silhouette</div>
+          <canvas id="canvas-sil" width="280" height="280"></canvas>
+        </div>
+        <div class="canvas-wrap">
+          <div class="canvas-label">Top Panel Cutout</div>
+          <canvas id="canvas-top" width="280" height="200"></canvas>
+        </div>
+        <div class="canvas-wrap">
+          <div class="canvas-label">Bottom Panel Cutout</div>
+          <canvas id="canvas-bot" width="280" height="200"></canvas>
+        </div>
+        <div class="canvas-wrap">
+          <div class="canvas-label">Left Panel Cutout</div>
+          <canvas id="canvas-lft" width="200" height="280"></canvas>
+        </div>
+        <div class="canvas-wrap">
+          <div class="canvas-label">Right Panel Cutout</div>
+          <canvas id="canvas-rgt" width="200" height="280"></canvas>
+        </div>
+      </div>
+
+      <!-- PREVIEW TAB -->
+      <div class="tab-content" id="tab-preview">
+        <div class="preview-container">
+          <div class="preview-room" id="preview-room">
+            <canvas id="canvas-wall-preview" width="700" height="500"></canvas>
+            <div class="preview-lamp-box" id="preview-lamp">
+              <div class="lamp-face lamp-top"></div>
+              <div class="lamp-face lamp-bot"></div>
+              <div class="lamp-face lamp-left"></div>
+              <div class="lamp-face lamp-right"></div>
+              <div class="lamp-led" id="lamp-led"></div>
+            </div>
+          </div>
+          <div class="preview-controls">
+            <button class="pill-btn active" onclick="setLightOn(true)">💡 Light On</button>
+            <button class="pill-btn" onclick="setLightOn(false)">🌑 Light Off</button>
+            <button class="pill-btn" onclick="animateGlow()">✨ Animate</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- EXPORT TAB -->
+      <div class="tab-content" id="tab-export">
+        <div class="export-grid">
+          <div class="export-card" id="exp-top">
+            <div class="exp-icon">⬆</div>
+            <h4>Top Panel</h4>
+            <p class="exp-dim" id="exp-top-dim">120 × 80 mm</p>
+            <div class="exp-preview"><canvas id="exp-canvas-top" width="200" height="140"></canvas></div>
+            <button class="exp-btn" onclick="downloadSTL('top')">Download STL</button>
+          </div>
+          <div class="export-card" id="exp-bot">
+            <div class="exp-icon">⬇</div>
+            <h4>Bottom Panel</h4>
+            <p class="exp-dim" id="exp-bot-dim">120 × 80 mm</p>
+            <div class="exp-preview"><canvas id="exp-canvas-bot" width="200" height="140"></canvas></div>
+            <button class="exp-btn" onclick="downloadSTL('bottom')">Download STL</button>
+          </div>
+          <div class="export-card" id="exp-lft">
+            <div class="exp-icon">◀</div>
+            <h4>Left Panel</h4>
+            <p class="exp-dim" id="exp-lft-dim">80 × 120 mm</p>
+            <div class="exp-preview"><canvas id="exp-canvas-lft" width="140" height="200"></canvas></div>
+            <button class="exp-btn" onclick="downloadSTL('left')">Download STL</button>
+          </div>
+          <div class="export-card" id="exp-rgt">
+            <div class="exp-icon">▶</div>
+            <h4>Right Panel</h4>
+            <p class="exp-dim" id="exp-rgt-dim">80 × 120 mm</p>
+            <div class="exp-preview"><canvas id="exp-canvas-rgt" width="140" height="200"></canvas></div>
+            <button class="exp-btn" onclick="downloadSTL('right')">Download STL</button>
+          </div>
+        </div>
+        <div class="export-footer">
+          <button class="big-export-btn" onclick="exportAllSTL()">
+            <span>⬇</span> Download All 4 Panels (ZIP)
+          </button>
+          <p class="export-note">STL files are ready for 3D printing. Print each panel flat. Use matte black PLA/PETG for best shadow contrast.</p>
+        </div>
+      </div>
+
+    </div><!-- /viewport -->
+
+    <!-- ──────────────────────── RIGHT: INFO PANEL ─────────────── -->
+    <aside class="info-panel" id="info-panel">
+      <div class="info-header">
+        <h3>Live Stats</h3>
+      </div>
+      <div class="stat-grid">
+        <div class="stat-card">
+          <span class="stat-label">Projection Ratio</span>
+          <span class="stat-val" id="stat-ratio">2.5×</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Shadow Width</span>
+          <span class="stat-val" id="stat-sw">300 mm</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Shadow Height</span>
+          <span class="stat-val" id="stat-sh">300 mm</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Panel Count</span>
+          <span class="stat-val">4</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Contour Points</span>
+          <span class="stat-val" id="stat-pts">—</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Islands</span>
+          <span class="stat-val" id="stat-islands">—</span>
+        </div>
+      </div>
+
+      <div class="info-section">
+        <h4>Projection Formula</h4>
+        <div class="formula-box">
+          <code>p<sub>panel</sub> = p<sub>light</sub> + t·(p<sub>wall</sub> − p<sub>light</sub>)</code>
+        </div>
+      </div>
+
+      <div class="info-section">
+        <h4>LED Recommendation</h4>
+        <div class="rec-list">
+          <div class="rec-item">✅ Single COB LED (bare die)</div>
+          <div class="rec-item">✅ Cree XP-E clear dome</div>
+          <div class="rec-item">✅ Single filament mini bulb</div>
+          <div class="rec-item">❌ Frosted diffuser LEDs</div>
+          <div class="rec-item">❌ Multi-diode COB arrays</div>
+        </div>
+      </div>
+
+      <div class="info-section">
+        <h4>Print Settings</h4>
+        <div class="rec-list">
+          <div class="rec-item">🎨 Matte Black PLA / PETG</div>
+          <div class="rec-item">📐 Print panels flat (Z-axis)</div>
+          <div class="rec-item">🔩 M3 assembly screws</div>
+          <div class="rec-item">🌡 60°C bed (PETG)</div>
+        </div>
+      </div>
+
+      <div class="info-section">
+        <h4>Assembly Order</h4>
+        <ol class="asm-list">
+          <li>Print all 4 panels + backplate</li>
+          <li>Mount LED stem to backplate</li>
+          <li>Route power through bottom panel slot</li>
+          <li>Join panels via finger joints / snap-fits</li>
+          <li>Angle lamp face toward wall</li>
+        </ol>
+      </div>
+    </aside>
+
+  </main>
+
+  <!-- STATUS BAR -->
+  <div class="status-bar" id="status-bar">
+    <span class="status-dot" id="status-dot"></span>
+    <span id="status-text">Ready — upload an image or choose a demo shape to begin</span>
+    <span class="status-right">Shadow Lamp Generator v1.0 · ProSlicer Plugin</span>
+  </div>
+
+  <!-- LOADING OVERLAY -->
+  <div class="loading-overlay" id="loading-overlay" style="display:none">
+    <div class="loading-spinner"></div>
+    <p class="loading-text" id="loading-text">Computing projection geometry…</p>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="engine.js"></script>
+  <script src="stl.js"></script>
+  <script src="demo-shapes.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
